@@ -1,0 +1,466 @@
+"use client";
+
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import {
+  FaHeart,
+  FaRegHeart,
+  FaCartShopping,
+  FaChevronUp,
+  FaChevronDown,
+  FaBell,
+} from "react-icons/fa6";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/components/context/CartContext";
+import { useUser } from "@/components/context/UserContext";
+import AuthModal from "@/components/auth/AuthModal";
+import WaitlistModal from "@/components/cart/WaitlistModal";
+import { getDisplayPrice } from "@/lib/pricing";
+import { useLanguage } from "@/components/context/LanguageContext";
+import SectionHeader from "./SectionHeader";
+
+export default function DealsOfDay() {
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [sidebarScroll, setSidebarScroll] = useState(0);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  const [productImages, setProductImages] = useState([
+    "/assets/placeholder.svg",
+  ]);
+  const [mainProduct, setMainProduct] = useState(null);
+  const [bestsellerProducts, setBestsellerProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { addToCart, addToWishlist, removeFromWishlist, wishlistItems } =
+    useCart();
+  const { user } = useUser();
+  const { t } = useLanguage();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingWishlist, setPendingWishlist] = useState(null);
+  const [waitlistProduct, setWaitlistProduct] = useState(null);
+
+  // fetch deals-of-day product and bestseller list
+  useEffect(() => {
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
+    const fetchData = async () => {
+      try {
+        // Deal of the Day is chosen from the dashboard (Setting.dealOfDayProductId)
+        let deal = null;
+        try {
+          const settingResp = await fetch(`${API}/api/deal-of-day`);
+          const settingJson = await settingResp.json();
+          deal = settingJson.product || null;
+        } catch {
+          /* ignore */
+        }
+
+        if (deal) {
+          const { price, compareAtPrice } = getDisplayPrice(deal);
+          setMainProduct({ ...deal, price, compareAtPrice });
+          setProductImages((deal.images || []).map((i) => i.url));
+        }
+
+        const bestResp = await fetch(
+          `${API}/api/products?badge=best_seller&limit=20`,
+        );
+        const bestJson = await bestResp.json();
+        const bests = (bestJson.items || []).map((p) => {
+          const { price } = getDisplayPrice(p);
+          return {
+            id: p._id || p.id,
+            name: p.title,
+            price,
+            displayPrice: price ? `৳${price}` : "",
+            rating: p.averageRating || 0,
+            image:
+              (p.images && p.images[0] && p.images[0].url) ||
+              "/assets/placeholder.svg",
+          };
+        });
+        setBestsellerProducts(bests);
+      } catch (err) {
+        console.error("error loading deals/bestsellers", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = { ...prev };
+
+        if (newTime.seconds > 0) {
+          newTime.seconds -= 1;
+        } else {
+          newTime.seconds = 59;
+          if (newTime.minutes > 0) {
+            newTime.minutes -= 1;
+          } else {
+            newTime.minutes = 59;
+            if (newTime.hours > 0) {
+              newTime.hours -= 1;
+            } else {
+              newTime.hours = 23;
+              if (newTime.days > 0) {
+                newTime.days -= 1;
+              }
+            }
+          }
+        }
+
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // handle pending wishlist after login
+  useEffect(() => {
+    if (user && pendingWishlist) {
+      addToWishlist(pendingWishlist);
+      const id = window.setTimeout(() => setPendingWishlist(null), 0);
+      return () => window.clearTimeout(id);
+    }
+  }, [user, pendingWishlist, addToWishlist]);
+
+  const handleSidebarScroll = (direction) => {
+    const itemsToShow = 4;
+    if (
+      direction === "down" &&
+      sidebarScroll < bestsellerProducts.length - itemsToShow
+    ) {
+      setSidebarScroll((prev) => prev + 1);
+    } else if (direction === "up" && sidebarScroll > 0) {
+      setSidebarScroll((prev) => prev - 1);
+    }
+  };
+
+  // reset selected thumbnail when images change
+  useEffect(() => {
+    const id = window.setTimeout(() => setSelectedImage(0), 0);
+    return () => window.clearTimeout(id);
+  }, [productImages]);
+
+  const renderStars = (rating) => {
+    return (
+      <div className="flex items-center">
+        {[...Array(5)].map((_, i) => (
+          <span
+            key={i}
+            className={`${i < rating ? "text-yellow-400" : "text-gray-300"}`}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  const visibleBestsellers = bestsellerProducts.slice(
+    sidebarScroll,
+    sidebarScroll + 4,
+  );
+
+  const isWishlisted =
+    !!mainProduct && wishlistItems.includes(mainProduct._id);
+
+  if (loading) {
+    return (
+      <div className="py-24 text-center text-gray-500">
+        {t("home.loading_deal")}
+      </div>
+    );
+  }
+
+  if (!mainProduct) {
+    return null;
+  }
+
+  return (
+    <div className="w-full max-w-7xl mx-auto px-2 md:px-4 lg:px-6 py-5 md:py-8">
+      {/* Header */}
+      <SectionHeader title={t("home.deal_of_day")} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+        {/* Main Product Section - Left Side */}
+        <div className="lg:col-span-9">
+          <div className="border border-gray-100 rounded-2xl p-2 md:p-4 bg-linear-to-br from-[#fefeff] to-[#F3F4F6] h-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+              {/* Product Image Section */}
+              <div>
+                {/* Main Product Image */}
+                <div className="relative bg-white rounded-lg mb-2 md:mb-4  h-44 sm:h-86 flex items-center justify-center">
+                  <Image
+                    src={encodeURI(
+                      productImages[selectedImage] || "/assets/placeholder.svg",
+                    )}
+                    alt="Product"
+                    loading="lazy"
+                    decoding="async"
+                    width={1400}
+                    height={1200}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/assets/placeholder.svg";
+                    }}
+                    className="absolute inset-0 w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* Thumbnail Gallery */}
+                <div className="grid grid-cols-6 gap-2 mt-1 md:-mt-2">
+                  {productImages.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`border-2 rounded-lg p-0.5 md:p-1 hover:border-[#1D1D1F] transition ${
+                        selectedImage === index
+                          ? "border-[#1D1D1F]"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <Image
+                        src={encodeURI(img || "/assets/placeholder.svg")}
+                        alt={`Thumbnail ${index + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                        width={80}
+                        height={80}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/assets/placeholder.svg";
+                        }}
+                        className="w-full h-6 md:h-14 object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Product Details Section */}
+              <div>
+                {/* Rating and Reviews */}
+                <div className="flex items-center gap-2 mb-1 md:mb-3">
+                  {renderStars(mainProduct?.averageRating || 0)}
+                  <span className="text-gray-600 text-xs md:text-sm">
+                    ({mainProduct?.reviewCount || 0}) Review
+                  </span>
+                </div>
+
+                {/* Product Title */}
+                <h2 className="text-sm md:text-2xl font-bold tracking-tight text-[#1F2937] mb-1 md:mb-4 font-georgia">
+                  {mainProduct?.title || "Deal Product"}
+                </h2>
+
+                {/* Price */}
+                <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-4">
+                  <span className="text-base md:text-3xl font-bold text-[#1D1D1F]">
+                    {mainProduct?.price ? `৳${mainProduct.price}` : "-"}
+                  </span>
+                  {mainProduct?.compareAtPrice && (
+                    <span className="text-xs md:text-xl text-gray-500 line-through">
+                      ৳{mainProduct.compareAtPrice}
+                    </span>
+                  )}
+                </div>
+
+                {/* Availability and Units Sold */}
+                <div className="flex items-center gap-6 md:gap-8 mb-1.5 md:mb-6 text-[11px] md:text-base">
+                  <div>
+                    <span className="text-gray-600">Available: </span>
+                    <span className="font-bold text-gray-900">
+                      {mainProduct?.inventory || 0}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Units Sold: </span>
+                    <span className="font-bold text-gray-900">
+                      {mainProduct?.monthlySold || 0}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2 mb-2 md:mb-6">
+                  <div
+                    className="bg-[#1D1D1F] h-1.5 md:h-2 rounded-full"
+                    style={{ width: "30%" }}
+                  ></div>
+                </div>
+
+                {/* Countdown Timer */}
+                <div className="flex gap-2 md:gap-4 mb-2 md:mb-6">
+                  <div className="text-center">
+                    <div className="bg-gray-900 text-white rounded px-2 py-1 md:px-3 md:py-2 font-bold text-xs md:text-lg tabular-nums leading-none flex items-center justify-center h-7 md:h-10 min-w-[2rem] md:min-w-[2.75rem]">
+                      {String(timeLeft.days).padStart(2, "0")}
+                    </div>
+                    <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Days</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-gray-900 text-white rounded px-2 py-1 md:px-3 md:py-2 font-bold text-xs md:text-lg tabular-nums leading-none flex items-center justify-center h-7 md:h-10 min-w-[2rem] md:min-w-[2.75rem]">
+                      {String(timeLeft.hours).padStart(2, "0")}
+                    </div>
+                    <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Hrs</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-gray-900 text-white rounded px-2 py-1 md:px-3 md:py-2 font-bold text-xs md:text-lg tabular-nums leading-none flex items-center justify-center h-7 md:h-10 min-w-[2rem] md:min-w-[2.75rem]">
+                      {String(timeLeft.minutes).padStart(2, "0")}
+                    </div>
+                    <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Mins</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-gray-900 text-white rounded px-2 py-1 md:px-3 md:py-2 font-bold text-xs md:text-lg tabular-nums leading-none flex items-center justify-center h-7 md:h-10 min-w-[2rem] md:min-w-[2.75rem]">
+                      {String(timeLeft.seconds).padStart(2, "0")}
+                    </div>
+                    <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Secs</div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 md:gap-3 mb-0 md:mb-4">
+                  {mainProduct?.availability === "out_of_stock" ||
+                  mainProduct?.inventory === 0 ? (
+                    <>
+                      <button
+                        disabled
+                        className="flex-none bg-gray-200 text-red-500 py-2 md:py-3 px-3 md:px-4 rounded-lg text-xs md:text-sm font-medium cursor-not-allowed whitespace-nowrap"
+                      >
+                        {t("home.out_of_stock")}
+                      </button>
+                      <button
+                        onClick={() => setWaitlistProduct(mainProduct)}
+                        className="flex-1 flex items-center justify-center gap-2 border-2 border-teal-500 text-teal-700 py-2 md:py-3 rounded-lg text-xs md:text-base font-semibold hover:bg-teal-50 transition"
+                      >
+                        <FaBell className="w-4 h-4" /> Join Waitlist
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (mainProduct) {
+                          addToCart(mainProduct, 1, { silent: true });
+                          router.push("/checkout");
+                        }
+                      }}
+                      className="flex-1 bg-[#c8c8c9] text-black py-2 md:py-3 rounded-lg text-xs md:text-base font-semibold hover:bg-black hover:text-white transition"
+                    >
+                      {t("product.buy_now")}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        setPendingWishlist(mainProduct);
+                        setShowAuthModal(true);
+                      } else if (mainProduct) {
+                        if (isWishlisted) removeFromWishlist(mainProduct._id);
+                        else addToWishlist(mainProduct);
+                      }
+                    }}
+                    aria-pressed={isWishlisted}
+                    title={
+                      isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                    }
+                    className={`w-9 h-9 md:w-12 md:h-12 text-sm md:text-base shrink-0 border-2 rounded-lg flex items-center justify-center transition ${
+                      isWishlisted
+                        ? "border-rose-500 text-rose-500"
+                        : "border-gray-300 hover:border-[#1D1D1F] hover:text-[#1D1D1F]"
+                    }`}
+                  >
+                    {isWishlisted ? <FaHeart /> : <FaRegHeart />}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (mainProduct) addToCart(mainProduct, 1);
+                    }}
+                    className="w-9 h-9 md:w-12 md:h-12 text-sm md:text-base shrink-0 border-2 border-gray-300 rounded-lg flex items-center justify-center hover:border-[#1D1D1F] hover:text-[#1D1D1F] transition"
+                  >
+                    <FaCartShopping />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bestseller Sidebar - Right Side */}
+        <div className="lg:col-span-3 bg-linear-to-b from-[#fefeff] to-[#f6f5f7]">
+          <div className="flex flex-col h-full">
+            <div className="bg-[#1D1D1F] text-white rounded-t-lg p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold">Bestseller product</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleSidebarScroll("up")}
+                    disabled={sidebarScroll === 0}
+                    className="w-7 h-7 bg-white text-[#1D1D1F] rounded flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <FaChevronUp />
+                  </button>
+                  <button
+                    onClick={() => handleSidebarScroll("down")}
+                    disabled={sidebarScroll >= bestsellerProducts.length - 4}
+                    className="w-7 h-7 bg-white text-[#1D1D1F] rounded flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <FaChevronDown />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-b-lg px-3 py-1 space-y-1 flex-1">
+              {visibleBestsellers.map((product) => (
+                <div
+                  key={product.id}
+                  onClick={() => router.push(`/product/${product.id}/`)}
+                  className="flex gap-4 pb-2 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50 transition"
+                >
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    loading="lazy"
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 object-contain bg-gray-50 rounded"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 mb-0.5 text-xs line-clamp-2">
+                      {product.name}
+                    </h4>
+                    <div className="flex items-center gap-1 text-xs">
+                      {renderStars(product.rating)}
+                    </div>
+                    <p className="text-[#1D1D1F] font-bold text-sm">
+                      ৳{product.price}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      {waitlistProduct && (
+        <WaitlistModal
+          product={waitlistProduct}
+          onClose={() => setWaitlistProduct(null)}
+        />
+      )}
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+        />
+      )}
+    </div>
+  );
+}

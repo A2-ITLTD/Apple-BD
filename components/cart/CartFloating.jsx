@@ -1,0 +1,51 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import { useCart, getItemPrice } from "@/components/context/CartContext";
+import { FiShoppingCart } from "react-icons/fi";
+import { useLanguage } from "@/components/context/LanguageContext";
+
+export default function CartFloating() {
+  const { cartItems, getCartCount, toggleSidebar, isSidebarOpen } = useCart();
+  const { t } = useLanguage();
+  const count = getCartCount();
+  const [bump, setBump] = useState(false);
+  const prevCount = useRef(count);
+
+  useEffect(() => {
+    if (count !== prevCount.current) {
+      prevCount.current = count;
+      setBump(true);
+      const timer = setTimeout(() => setBump(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [count]);
+
+  if (count === 0 || isSidebarOpen) return null;
+
+  const total = cartItems.reduce(
+    (sum, item) => sum + getItemPrice(item) * item.quantity,
+    0,
+  );
+  const label = `${t("cart.open_label_prefix")} ${count} ${t("cart.items_label")}, ${t("cart.open_label_total")}${total}`;
+
+  return (
+    // Mobile: sits just above the scroll-to-top button. Desktop: higher up.
+    <span className="fixed z-50 bottom-16 sm:bottom-26" style={{ right: 16 }}>
+      {/* ping ring — always active like a map marker */}
+      <span className="absolute inset-0 rounded-full bg-[#1D1D1F] opacity-30 animate-ping" />
+      <button
+        onClick={toggleSidebar}
+        aria-label={label}
+        className={`relative flex items-center justify-center bg-[#1D1D1F] text-white rounded-full shadow-lg shadow-gray-300 w-9 h-9 sm:w-12 sm:h-12 hover:bg-black active:scale-95 transition-transform ${bump ? "scale-110" : "scale-100"}`}
+      >
+        <span className="relative">
+          <FiShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="absolute -top-2 -right-2 sm:-top-2.5 sm:-right-2.5 bg-white text-[#1D1D1F] text-[9px] sm:text-[10px] font-bold min-w-4 h-4 sm:min-w-4.5 sm:h-4.5 rounded-full flex items-center justify-center leading-none px-0.5 border border-gray-100 shadow-sm">
+            {count}
+          </span>
+        </span>
+      </button>
+    </span>
+  );
+}

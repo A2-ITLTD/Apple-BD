@@ -1,0 +1,73 @@
+/** @type {import('next').NextConfig} */
+import path from "path";
+import { fileURLToPath } from "url";
+
+// __dirname is not available in ES-module (.mjs) files — compute it manually
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const nextConfig = {
+  // output: "export",
+  trailingSlash: true,
+
+  // Disable React StrictMode's dev-only double mount/effect invocation. It made
+  // the /user/* pages visibly flash a few times on entry (every provider/effect
+  // ran twice in dev). This does NOT change production behavior — real users
+  // never had StrictMode's double-invoke. Re-enable if debugging effect/DOM bugs.
+  reactStrictMode: false,
+
+  async redirects() {
+    return [
+      // Order-success page moved from /checkout/success to /thankyou/success.
+      // Query params (orderId, method) are preserved automatically.
+      {
+        source: "/checkout/success",
+        destination: "/thankyou/success",
+        permanent: false,
+      },
+      // Bare /thankyou lands on the success page too.
+      {
+        source: "/thankyou",
+        destination: "/thankyou/success",
+        permanent: false,
+      },
+    ];
+  },
+  // headers() is not supported with output: "export" — set these via .htaccess on cPanel instead.
+  // async headers() {
+  //   return [{ source: '/(.*)', headers: securityHeaders }];
+  // },
+  images: {
+    unoptimized: true,
+    remotePatterns: [
+      // New uploads are served from our own backend's /uploads folder.
+      { protocol: "https", hostname: "api.applebd.com" },
+      // Local development backend.
+      { protocol: "http", hostname: "localhost" },
+      // Legacy assets still served from Cloudinary.
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "download.logo.wine" },
+      { protocol: "https", hostname: "img.icons8.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
+  },
+
+  // Webpack alias (fallback for non-Turbopack builds)
+  webpack(config) {
+    config.resolve.alias = config.resolve.alias || {};
+    config.resolve.alias["@"] = __dirname;
+    return config;
+  },
+
+  // Turbopack alias (Next.js 15/16 default bundler)
+  turbopack: {
+    resolveAlias: {
+      "@/components": path.join(__dirname, "components"),
+      "@/app": path.join(__dirname, "app"),
+      "@/lib": path.join(__dirname, "lib"),
+      "@/public": path.join(__dirname, "public"),
+    },
+  },
+};
+
+export default nextConfig;

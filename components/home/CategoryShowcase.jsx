@@ -1,0 +1,208 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import SectionHeader from "./SectionHeader";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
+
+function Tile({ tile, big = false, className = "", delay = 0 }) {
+  if (!tile) return null;
+  return (
+    <Link
+      href={tile.link || "/"}
+      style={{ animationDelay: `${delay}ms` }}
+      className={`showcase-tile group relative bg-[#F5F6F7] overflow-hidden ring-1 ring-black/5 shadow-[0_10px_28px_rgba(15,23,42,0.10)] hover:shadow-[0_22px_48px_rgba(29,29,31,0.22)] hover:-translate-y-1.5 transition-all duration-500 ${className}`}
+    >
+      {/* image fills the whole tile */}
+      <Image
+        src={encodeURI(tile.image?.url || "/assets/placeholder.svg")}
+        alt={tile.label || "Category"}
+        fill
+        sizes={big ? "(max-width: 768px) 100vw, 30vw" : "25vw"}
+        className="object-cover md:object-contain transition-transform duration-700 ease-out group-hover:scale-110"
+      />
+      {/* soft sheen sweeping across on hover */}
+      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 ease-out pointer-events-none" />
+      {/* soft fade towards the bottom so the name stays readable */}
+      <div className="absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-black/60 via-black/25 to-transparent backdrop-blur-[1.5px] mask-[linear-gradient(to_top,black,transparent)] transition-opacity duration-300 group-hover:from-black/75" />
+      {/* label + hover hint */}
+      <div className="absolute inset-x-0 bottom-0 px-3 pb-2 md:pb-3 text-center">
+        <p className="text-white font-semibold text-sm md:text-base drop-shadow truncate transition-transform duration-300 group-hover:-translate-y-1 font-georgia">
+          {tile.label}
+        </p>
+        <span className="block text-[10px] md:text-[11px] font-semibold uppercase tracking-widest text-white/90 opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+          Shop Now →
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function ShowcasePage({ page, isActive }) {
+  // slots: 0 = left big, 1–4 = middle small, 5 = right big
+  const [leftBig, s1, s2, s3, s4, rightBig] = page.tiles;
+  return (
+    <div className="w-full shrink-0 px-0.5">
+      {page.title && <SectionHeader title={page.title} />}
+
+      {/* Mobile (< md): a horizontal swipe slider that reads the same order as
+          the desktop bento — big → 2 stacked mediums → 2 stacked mediums → big.
+          Every slide is the SAME height; each medium is exactly half a big
+          (0.5 + 0.5). Slides are narrower than the viewport so the next one
+          peeks, hinting the row is swipeable. */}
+      <div
+        key={isActive ? "m-active" : "m-idle"}
+        className="showcase-scroll md:hidden flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1 h-72"
+      >
+        <div className="shrink-0 basis-[68%] snap-start h-full">
+          <Tile tile={leftBig} delay={0} className="block h-full" />
+        </div>
+        <div className="shrink-0 basis-[46%] snap-start h-full flex flex-col gap-2">
+          <Tile tile={s1} delay={120} className="flex-1 min-h-0" />
+          <Tile tile={s3} delay={280} className="flex-1 min-h-0" />
+        </div>
+        <div className="shrink-0 basis-[46%] snap-start h-full flex flex-col gap-2">
+          <Tile tile={s2} delay={200} className="flex-1 min-h-0" />
+          <Tile tile={s4} delay={360} className="flex-1 min-h-0" />
+        </div>
+        <div className="shrink-0 basis-[68%] snap-start h-full">
+          <Tile tile={rightBig} delay={440} className="block h-full" />
+        </div>
+      </div>
+
+      {/* md+: 6 columns — each big tile spans 2 (= the two middle smalls
+          combined), two fixed rows so smalls are exactly half a big tile.
+          key flips when this page becomes active → tiles replay their
+          staggered entrance animation */}
+      <div
+        key={isActive ? "active" : "idle"}
+        className="hidden md:grid grid-cols-6 gap-3 auto-rows-55 lg:auto-rows-62.5"
+      >
+        <Tile
+          tile={leftBig}
+          big
+          delay={0}
+          className="col-span-2 row-span-2"
+        />
+        <Tile tile={s1} delay={120} />
+        <Tile tile={s2} delay={200} />
+        <Tile
+          tile={rightBig}
+          big
+          delay={440}
+          className="col-span-2 row-span-2 col-start-5 row-start-1"
+        />
+        <Tile tile={s3} delay={280} />
+        <Tile tile={s4} delay={360} />
+      </div>
+    </div>
+  );
+}
+
+// SteelSeries-style bento showcase. Multiple pages (dashboard → Marketing &
+// Content → Category Showcase) render as a slider with dots underneath.
+export default function CategoryShowcase() {
+  const [pages, setPages] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const autoRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`${API}/api/category-showcase`)
+      .then((r) => r.json())
+      .then((d) => setPages(d.pages || []))
+      .catch(() => setPages([]));
+  }, []);
+
+  const total = pages.length;
+
+  const startAuto = useCallback(() => {
+    clearInterval(autoRef.current);
+    if (total <= 1) return;
+    autoRef.current = setInterval(
+      () => setCurrent((p) => (p + 1) % total),
+      6000,
+    );
+  }, [total]);
+
+  useEffect(() => {
+    startAuto();
+    return () => clearInterval(autoRef.current);
+  }, [startAuto]);
+
+  if (total === 0) return null;
+
+  return (
+    <section
+      className=" "
+      onMouseEnter={() => clearInterval(autoRef.current)}
+      onMouseLeave={startAuto}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* overflow clips at the content edge (inside the padding), so the
+            next page can never peek through the side padding */}
+        <div className="overflow-hidden">
+          {/* sliding track — one showcase page per slide */}
+          <div
+            className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            style={{ transform: `translateX(-${current * 100}%)` }}
+          >
+            {pages.map((page, i) => (
+              <ShowcasePage key={i} page={page} isActive={i === current} />
+            ))}
+          </div>
+        </div>
+
+        {/* dots */}
+        {total > 1 && (
+          <div className="flex justify-center items-center gap-2.5 mt-3 bg-[#F3F4F6] py-1.5 px-6 rounded-full w-fit mx-auto">
+            {pages.map((_, i) => (
+              <button
+                key={i}
+                aria-label={`Go to showcase ${i + 1}`}
+                onClick={() => {
+                  setCurrent(i);
+                  startAuto();
+                }}
+                className={`rounded-full transition-all duration-300 ${
+                  i === current
+                    ? "w-3 h-3 border-1 border-gray-400 bg-white ring-2 ring-white"
+                    : "w-2 h-2 bg-gray-400 hover:bg-[#1D1D1F]"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <style jsx global>{`
+        .showcase-scroll {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .showcase-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        .showcase-tile {
+          animation: showcaseTileIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes showcaseTileIn {
+          from {
+            opacity: 0;
+            transform: translateY(28px) scale(0.97);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .showcase-tile {
+            animation: none;
+          }
+        }
+      `}</style>
+    </section>
+  );
+}

@@ -97,7 +97,23 @@ const CategorySidebar = ({ onLinkClick }) => {
             className="w-full flex items-center gap-3 px-4 py-1 transition-colors duration-200 hover:bg-pink-50 group"
             onClick={handleLinkClick}
           >
-            <span className="text-xl">🛍️</span>
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center text-gray-700 transition-colors group-hover:text-rose-600">
+              <svg
+                aria-hidden="true"
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+                <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+                <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+                <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+              </svg>
+            </span>
             <span className="font-medium text-sm text-gray-800 group-hover:text-rose-600 transition-colors whitespace-nowrap">
               All Products
             </span>

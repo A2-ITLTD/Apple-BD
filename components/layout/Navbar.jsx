@@ -399,34 +399,37 @@ export default function Navbar() {
 
   const isActive = (href) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const isAllProductsPage = pathname === "/products" || pathname === "/products/";
 
   return (
     <header className="relative bg-transparent z-50 work-sans">
       <div className="flex items-center justify-between max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto h-12 md:h-14">
         {/* Left: hamburger (mobile) + logo */}
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setCatSidebarOpen((v) => !v)}
-            className="px-2 text-gray-800 hover:text-[#1D1D1F] lg:hidden"
-            aria-label="Categories"
-            title="Categories"
-          >
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="stroke-current"
+          {!isAllProductsPage && (
+            <button
+              onClick={() => setCatSidebarOpen((v) => !v)}
+              className="px-2 text-gray-800 hover:text-[#1D1D1F] lg:hidden"
+              aria-label="Categories"
+              title="Categories"
             >
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
+              <svg
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="stroke-current"
+              >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          )}
           <WebsiteLogo />
         </div>
 

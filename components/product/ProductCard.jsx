@@ -341,27 +341,25 @@ export default function ProductCard({
             </p>
           )}
 
-          {/* Price + swatches on one tight row */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-baseline gap-1.5 min-w-0">
-              <span className="text-base sm:text-lg font-bold text-[#1D1D1F] tracking-tight whitespace-nowrap">
+          {/* Price and desktop color options share one compact row. */}
+          <div className="flex min-w-0 items-center justify-between gap-1.5">
+            <div className="flex min-w-0 items-baseline gap-1.5">
+              <span className="whitespace-nowrap text-base font-bold tracking-tight text-[#1D1D1F] sm:text-lg">
                 ৳{price?.toLocaleString()}
               </span>
               {compareAt && compareAt > price && (
-                <span className="text-xs text-gray-400 line-through whitespace-nowrap">
+                <span className="whitespace-nowrap text-xs text-gray-400 line-through">
                   ৳{compareAt?.toLocaleString()}
                 </span>
               )}
             </div>
-            {/* Color swatches - extracted from variants. Clicking a swatch
-                switches the card image to the image mapped to that color. */}
             {(() => {
               const variantColors = getVariantColors(product);
               if (variantColors.length === 0) return null;
               const colorImageMap = getColorImageMap(product);
               return (
-                <div className="relative z-[2] flex items-center gap-1 shrink-0">
-                  {variantColors.slice(0, 4).map((c, i) => {
+                <div className="relative z-[2] hidden shrink-0 items-center gap-0.5 lg:flex">
+                  {variantColors.slice(0, 3).map((c, i) => {
                     const hex = c.hex?.trim()
                       ? c.hex.startsWith("#")
                         ? c.hex
@@ -380,7 +378,6 @@ export default function ProductCard({
                           e.preventDefault();
                           e.stopPropagation();
                           if (isSelected) {
-                            // Toggle off — deselect the color and revert image
                             setSelectedColor(null);
                             setCurrentImageIndex(0);
                             return;
@@ -393,19 +390,24 @@ export default function ProductCard({
                             if (idx >= 0) setCurrentImageIndex(idx);
                           }
                         }}
-                        className={`pointer-events-auto w-3.5 h-3.5 rounded-full inline-block border transition-all ${
+                        className={`pointer-events-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/50 focus-visible:ring-offset-1 ${
                           isSelected
-                            ? "ring-2 ring-offset-1 ring-[#1D1D1F] border-white"
-                            : "border-gray-200 hover:scale-110"
+                            ? "ring-2 ring-[#1D1D1F] ring-offset-1"
+                            : "hover:bg-gray-100"
                         }`}
-                        style={{ backgroundColor: hex }}
                         aria-label={`Show ${c.name}`}
-                      />
+                        aria-pressed={isSelected}
+                      >
+                        <span
+                          className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-sm"
+                          style={{ backgroundColor: hex }}
+                        />
+                      </button>
                     );
                   })}
-                  {variantColors.length > 4 && (
-                    <span className="text-[10px] text-gray-400 leading-4">
-                      +{variantColors.length - 4}
+                  {variantColors.length > 3 && (
+                    <span className="px-1 text-[10px] leading-4 text-gray-500">
+                      +{variantColors.length - 3}
                     </span>
                   )}
                 </div>

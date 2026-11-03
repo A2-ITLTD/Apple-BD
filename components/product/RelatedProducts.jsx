@@ -29,8 +29,9 @@ export default function RelatedProducts({ products = [] }) {
             <div key={p._id || p.id} className="shrink-0 w-46">
               <ProductCard
                 product={p}
-                imageHeight={120}
+                imageHeight={140}
                 imageWidth={200}
+                imageFit="cover"
                 showDiscount={true}
                 maxTags={2}
               />

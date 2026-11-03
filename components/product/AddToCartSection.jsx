@@ -263,7 +263,7 @@ export default function AddToCartSection({
             <QuantitySelector quantity={qty} onChange={setQty} />
             <button
               onClick={handleAdd}
-              className="flex-1 bg-[#1D1D1F] text-white px-6 py-2 md:py-3 rounded-xl font-medium hover:bg-black transition shadow-sm whitespace-nowrap"
+              className="flex-1 rounded-xl border border-gray-300 bg-white px-6 py-2 font-medium text-[#1D1D1F] transition hover:border-gray-400 hover:bg-gray-50 md:py-3 whitespace-nowrap"
             >
               Add to cart
             </button>
@@ -275,7 +275,7 @@ export default function AddToCartSection({
           )}
           <button
             onClick={handleBuyNow}
-            className="w-full bg-[#E5F3FF] border border-gray-200 text-[#1D1D1F] py-2 md:py-2.5 rounded-xl font-semibold hover:bg-[#E8E8ED] hover:border-gray-300 transition-colors"
+            className="w-full rounded-xl bg-[#1D1D1F] py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/40 focus-visible:ring-offset-2 md:py-3"
           >
             Buy Now
           </button>

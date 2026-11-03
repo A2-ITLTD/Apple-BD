@@ -271,7 +271,7 @@ export default function FeaturedShowcase() {
 
   return (
     <section
-      className="max-w-7xl mx-auto px-4 sm:px-6 mt-4 sm:mt-10 mb-6 sm:mb-12"
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-10 mb-6 sm:mb-12"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -378,7 +378,7 @@ export default function FeaturedShowcase() {
             <>
               {/* Full-bleed hero image — no surrounding padding; discount + tab
                   label overlaid at the top. */}
-              <div className="relative w-full aspect-5/4 bg-linear-to-b from-[#CFDAE2] via-[#BAC8D3] to-[#A6B8C5] overflow-hidden">
+              <div className="relative h-48 w-full overflow-hidden bg-linear-to-b from-[#CFDAE2] via-[#BAC8D3] to-[#A6B8C5] sm:h-56 md:h-64">
                 <div className="absolute inset-[12%] bg-[radial-gradient(closest-side,rgba(255,255,255,0.6),rgba(255,255,255,0)_75%)] blur-lg" />
                 <div className="relative h-full w-full">{heroImg}</div>
                 <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">

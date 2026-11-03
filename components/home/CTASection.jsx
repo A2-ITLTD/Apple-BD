@@ -24,7 +24,7 @@ export default function CTASection() {
   if (!panel) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-stretch">
         {/* Text card */}
         <div className="bg-gray-50 rounded-3xl flex flex-col items-center justify-center text-center px-8 py-14 md:py-0 min-h-60">

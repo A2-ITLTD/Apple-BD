@@ -169,7 +169,6 @@ export default function DealsOfDay() {
     sidebarScroll,
     sidebarScroll + 4,
   );
-
   const isWishlisted =
     !!mainProduct && wishlistItems.includes(mainProduct._id);
 
@@ -186,7 +185,7 @@ export default function DealsOfDay() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-2 md:px-4 lg:px-6 py-5 md:py-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-8">
       {/* Header */}
       <SectionHeader title={t("home.deal_of_day")} />
 
@@ -351,7 +350,7 @@ export default function DealsOfDay() {
                           router.push("/checkout");
                         }
                       }}
-                      className="flex-1 bg-[#c8c8c9] text-black py-2 md:py-3 rounded-lg text-xs md:text-base font-semibold hover:bg-black hover:text-white transition"
+                      className="flex-1 bg-[#1D1D1F] text-white py-2.5 md:py-3 rounded-xl text-xs md:text-base font-semibold shadow-sm hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/40 focus-visible:ring-offset-2 transition"
                     >
                       {t("product.buy_now")}
                     </button>
@@ -370,7 +369,7 @@ export default function DealsOfDay() {
                     title={
                       isWishlisted ? "Remove from wishlist" : "Add to wishlist"
                     }
-                    className={`w-9 h-9 md:w-12 md:h-12 text-sm md:text-base shrink-0 border-2 rounded-lg flex items-center justify-center transition ${
+                    className={`w-9 h-9 md:w-12 md:h-12 text-sm md:text-base shrink-0 border border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/40 focus-visible:ring-offset-2 transition ${
                       isWishlisted
                         ? "border-rose-500 text-rose-500"
                         : "border-gray-300 hover:border-[#1D1D1F] hover:text-[#1D1D1F]"
@@ -382,7 +381,9 @@ export default function DealsOfDay() {
                     onClick={() => {
                       if (mainProduct) addToCart(mainProduct, 1);
                     }}
-                    className="w-9 h-9 md:w-12 md:h-12 text-sm md:text-base shrink-0 border-2 border-gray-300 rounded-lg flex items-center justify-center hover:border-[#1D1D1F] hover:text-[#1D1D1F] transition"
+                    className="w-9 h-9 md:w-12 md:h-12 text-sm md:text-base shrink-0 border border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-[#1D1D1F] hover:text-[#1D1D1F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/40 focus-visible:ring-offset-2 transition"
+                    title={t("home.add_to_cart")}
+                    aria-label={t("home.add_to_cart")}
                   >
                     <FaCartShopping />
                   </button>
@@ -395,21 +396,23 @@ export default function DealsOfDay() {
         {/* Bestseller Sidebar - Right Side */}
         <div className="lg:col-span-3 bg-linear-to-b from-[#fefeff] to-[#f6f5f7]">
           <div className="flex flex-col h-full">
-            <div className="bg-[#1D1D1F] text-white rounded-t-lg p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold">Bestseller product</h3>
-                <div className="flex gap-2">
+            <div className="bg-[#1D1D1F] text-white rounded-t-lg px-3 py-3 md:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm md:text-base font-bold">Bestsellers</h3>
+                <div className="flex gap-1">
                   <button
                     onClick={() => handleSidebarScroll("up")}
                     disabled={sidebarScroll === 0}
-                    className="w-7 h-7 bg-white text-[#1D1D1F] rounded flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Previous bestsellers"
+                    className="w-7 h-7 border border-white/25 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <FaChevronUp />
                   </button>
                   <button
                     onClick={() => handleSidebarScroll("down")}
                     disabled={sidebarScroll >= bestsellerProducts.length - 4}
-                    className="w-7 h-7 bg-white text-[#1D1D1F] rounded flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Next bestsellers"
+                    className="w-7 h-7 border border-white/25 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <FaChevronDown />
                   </button>

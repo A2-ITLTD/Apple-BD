@@ -23,7 +23,7 @@ export default function PromoStripSection() {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-5 md:px-4 py-2 md:py-3">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-3">
       <div className="relative bg-linear-to-r from-gray-50 via-white to-gray-50 border border-gray-300/60 rounded-2xl overflow-visible shadow-[0_4px_24px_rgba(29,29,31,0.10)]">
         {/* top glow layer */}
 

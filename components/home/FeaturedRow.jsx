@@ -25,7 +25,7 @@ export default function FeaturedRow({ sectionId }) {
 
   return (
     <div className="w-full bg-[#F0F9FF] py-3 sm:py-6 md:py-8">
-      <div className="max-w-7xl mx-auto px-1.5 sm:px-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           title={lang === "bn" ? section.titleBn || section.title : section.title}
           seeMoreHref={
@@ -33,7 +33,7 @@ export default function FeaturedRow({ sectionId }) {
               ? section.viewAllLink
               : undefined
           }
-          seeMoreLabel={t("home.see_more")}
+          seeMoreLabel={t("home.view_all")}
         />
         <FeaturedSlider products={section.products} />
       </div>

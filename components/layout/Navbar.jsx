@@ -402,7 +402,7 @@ export default function Navbar() {
 
   return (
     <header className="relative bg-transparent z-50 work-sans">
-      <div className="flex items-center justify-between max-w-7xl  md:px-3  lg:px-4 mx-auto h-12 md:h-14">
+      <div className="flex items-center justify-between max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto h-12 md:h-14">
         {/* Left: hamburger (mobile) + logo */}
         <div className="flex items-center gap-1.5">
           <button
@@ -436,9 +436,9 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors ${
+              className={`relative py-1 text-sm font-medium transition-colors after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-black after:transition-transform after:duration-300 hover:after:scale-x-100 focus-visible:after:scale-x-100 ${
                 isActive(link.href)
-                  ? "text-[#1D1D1F]"
+                  ? "text-[#1D1D1F] after:scale-x-100"
                   : "text-gray-800 hover:text-[#1D1D1F]"
               }`}
             >
@@ -448,7 +448,7 @@ export default function Navbar() {
         </nav>
 
         {/* Right: actions */}
-        <div className="flex items-center gap-0 md:gap-0.5">
+        <div className="-mr-1 flex items-center gap-0 md:gap-0.5">
           {/* Track order */}
           <Link
             href="/track-order"

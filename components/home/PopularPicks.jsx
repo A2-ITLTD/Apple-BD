@@ -228,7 +228,7 @@ export default function PopularPicks() {
     <>
       <section className="w-full bg-white">
         <div
-          className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8"
+          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
           onMouseEnter={stopAutoSlide}
           onMouseLeave={startAutoSlide}
         >
@@ -236,7 +236,7 @@ export default function PopularPicks() {
           <SectionHeader
             title={t("home.popular_picks")}
             seeMoreHref="/tag/popular-pics/"
-            seeMoreLabel={t("home.see_more")}
+            seeMoreLabel={t("home.view_all")}
           />
 
           {/* Carousel Container with Left Panel */}

@@ -66,11 +66,11 @@ export default function Home() {
     // The old Store Hero (mini category-icon row) was retired — this slot now
     // renders a thin, admin-controlled promotional strip instead.
     storeHero: (
-      <PromoBanner className="max-w-7xl mx-auto px-4 sm:px-6 mt-2 sm:mt-3 mb-1" />
+      <PromoBanner className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 sm:mt-3 mb-1" />
     ),
     shopByCategory: <ShopByCategory />,
     adSlot: (
-      <AdSlot page="homepage" className="max-w-7xl mx-auto px-2 py-3" />
+      <AdSlot page="homepage" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3" />
     ),
     categoryShowcase: <CategoryShowcase />,
     whyChooseUs: <WhyChooseUs />,

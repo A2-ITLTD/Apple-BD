@@ -545,7 +545,7 @@ export default function ShoppableVideoCarousel({ section, lang = "en" }) {
 
   return (
     <div className="w-full bg-white py-3 md:py-6 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {heading && <SectionHeader title={heading} />}
       </div>
 

@@ -11,6 +11,7 @@ import { useCategories } from "@/components/context/CategoryContext";
 import { getDisplayPrice } from "@/lib/pricing";
 import AdSlot from "@/components/ui/AdSlot";
 import NoProductsFound from "@/components/ui/NoProductsFound";
+import PageBanner from "@/components/ui/PageBanner";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
 const PRODUCTS_PER_PAGE = 20;
@@ -439,8 +440,10 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
             ) : null}
           </nav>
 
+          <PageBanner placement="all-products" />
+
           {/* Title */}
-          <div className="relative text-center max-w-3xl mx-auto">
+          <div className="relative mx-auto mt-4 max-w-3xl text-center">
             <h1 className="text-3xl md:text-5xl text-[#1F2937] tracking-tight work-sans">
               {category?.name || slug}
             </h1>

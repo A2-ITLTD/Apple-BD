@@ -25,7 +25,7 @@ export default function PolicyTabs() {
   return (
     <nav
       aria-label="Help sections"
-      className="no-scrollbar mb-6 flex gap-2 overflow-x-auto rounded-2xl border border-gray-100 bg-white p-2 shadow-sm"
+      className="no-scrollbar flex gap-2 overflow-x-auto rounded-2xl border border-gray-100 bg-white p-2 shadow-sm"
     >
       {items.map((item) => {
         const active = pathname === normalize(item.href);

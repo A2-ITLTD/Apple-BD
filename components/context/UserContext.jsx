@@ -29,8 +29,14 @@ export const UserProvider = ({ children }) => {
   // deps (e.g. `[user, refreshUser]`). If it were recreated every render those
   // effects would re-fire on every render and hammer /api/auth/me into a 429
   // loop (spinner flicker). useCallback keeps the reference constant.
-  const refreshUser = useCallback(async () => {
-    if (inflight.current) return inflight.current;
+  const refreshUser = useCallback(async ({ force = false } = {}) => {
+    // A login can complete while the initial /me request (started on app mount)
+    // is still in flight. Reusing that older result would report `null` even
+    // though the login response has just set the admin cookie.
+    if (inflight.current) {
+      if (!force) return inflight.current;
+      await inflight.current;
+    }
     const run = (async () => {
       try {
         setLoading(true);

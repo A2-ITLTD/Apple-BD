@@ -49,7 +49,7 @@ export default function AdminLogin() {
         throw new Error(body.error || `Server responded ${resp.status}`);
       }
 
-      const loggedInUser = await refreshUser();
+      const loggedInUser = await refreshUser({ force: true });
       showMessage("Login successful — redirecting...", "success");
       // Admins land on the dashboard overview; moderators go straight to products.
       const dest =

@@ -10,6 +10,7 @@ import { useCategories } from "@/components/context/CategoryContext";
 import { getDisplayPrice } from "@/lib/pricing";
 import AdSlot from "@/components/ui/AdSlot";
 import NoProductsFound from "@/components/ui/NoProductsFound";
+import PageBanner from "@/components/ui/PageBanner";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
 const PRODUCTS_PER_PAGE = 20;
@@ -283,13 +284,12 @@ export default function AllProductsClient() {
           </nav>
 
 
-      {/* ── Hero header ── */}
-          {/* Title */}
-          <div className="relative text-left max-w-7xl mx-auto">
-            <h1 className="text-3xl md:text-5xl text-[#1F2937] tracking-tight font-georgia">
+          <PageBanner placement="all-products" />
+          <div className="relative mx-auto mt-4 max-w-7xl text-center sm:mt-5">
+            <h1 className="text-2xl font-bold tracking-tight text-[#1F2937] sm:text-3xl md:text-4xl">
               All Products
             </h1>
-            <p className="text-[#6B7280] mt-3 text-sm md:text-base leading-relaxed">
+            <p className="mt-1.5 text-sm leading-relaxed text-[#6B7280] sm:text-base">
               Browse our complete variety of collections
             </p>
           </div>
@@ -527,7 +527,7 @@ export default function AllProductsClient() {
 
               {!productsLoadedOnce && loadingProducts ? (
                 <div
-                  className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 ${showDesktopFilters ? "lg:grid-cols-4" : "lg:grid-cols-5"} gap-2 md:gap-4`}
+                  className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${showDesktopFilters ? "" : "xl:grid-cols-5"} gap-2 md:gap-4`}
                 >
                   {Array(10)
                     .fill(0)
@@ -538,7 +538,7 @@ export default function AllProductsClient() {
               ) : products.length > 0 ? (
                 <>
                   <div
-                    className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 ${showDesktopFilters ? "lg:grid-cols-4" : "lg:grid-cols-5"} gap-2 md:gap-4`}
+                    className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${showDesktopFilters ? "" : "xl:grid-cols-5"} gap-2 md:gap-4`}
                   >
                     {products.map((p) => (
                       <ProductCard
@@ -547,7 +547,8 @@ export default function AllProductsClient() {
                         showDiscount={true}
                         maxTags={2}
                         imageWidth={400}
-                        imageHeight={isMobileView ? 190 : 250}
+                        imageHeight={isMobileView ? 150 : 220}
+                        imageFit="cover-mobile-tablet"
                       />
                     ))}
                   </div>

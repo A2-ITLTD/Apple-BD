@@ -1,4 +1,4 @@
-﻿import { Work_Sans } from "next/font/google";
+﻿import { Noto_Sans_Bengali, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/components/context/UserContext";
 import { CartProvider } from "@/components/context/CartContext";
@@ -25,6 +25,13 @@ const workSans = Work_Sans({
   variable: "--font-work-sans",
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
+});
+
+const notoSansBengali = Noto_Sans_Bengali({
+  variable: "--font-noto-sans-bengali",
+  subsets: ["bengali", "latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export async function generateMetadata() {
@@ -145,7 +152,7 @@ export default async function RootLayout({ children }) {
         {/* Microsoft Clarity — uncomment and set NEXT_PUBLIC_CLARITY_ID */}
         {/* <Script id="ms-clarity" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/${process.env.NEXT_PUBLIC_CLARITY_ID}";y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script");` }} /> */}
       </head>
-      <body className={`${workSans.variable} antialiased`}>
+      <body className={`${workSans.variable} ${notoSansBengali.variable} antialiased`}>
         {/* Dedicated, React-owned mount points for admin custom-code injection —
             see TrackingCodeInjector.jsx for why these can't be document.body itself. */}
         <div id="tracking-body-start" style={{ display: "contents" }} />

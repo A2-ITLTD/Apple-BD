@@ -30,7 +30,7 @@ function useResponsiveSlider() {
       // Phones (< sm): two per row using the same vertical ProductCard as
       // desktop — matches the rest of the site instead of a special layout.
       else
-        setState({ perView: 2, cardWidth: 50, imageHeight: 210 });
+        setState({ perView: 2, cardWidth: 50, imageHeight: 160 });
     };
     update();
     window.addEventListener("resize", update);
@@ -128,7 +128,7 @@ export function FeaturedSlider({ products }) {
                 maxTags={2}
                 showActionsOnHover={true}
                 imageHeight={imageHeight}
-                imageFit="contain"
+                imageFit="cover-mobile-tablet"
               />
             </div>
           ))}
@@ -193,7 +193,7 @@ export default function FeaturedSections() {
     <section className="w-full py-2 sm:py-4 space-y-3 sm:space-y-6 md:space-y-8 bg-white">
       {sections.map((sec) => (
         <div key={sec._id} className="w-full bg-[#F0F9FF] py-3 sm:py-6 md:py-8">
-          <div className="max-w-7xl mx-auto px-1.5 sm:px-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Section header */}
             <SectionHeader
               title={lang === "bn" ? sec.titleBn || sec.title : sec.title}
@@ -202,7 +202,7 @@ export default function FeaturedSections() {
                   ? sec.viewAllLink
                   : undefined
               }
-              seeMoreLabel={t("home.see_more")}
+              seeMoreLabel={t("home.view_all")}
             />
             {/* Product slider */}
             <FeaturedSlider products={sec.products} />

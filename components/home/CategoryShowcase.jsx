@@ -139,7 +139,7 @@ export default function CategoryShowcase() {
       onMouseEnter={() => clearInterval(autoRef.current)}
       onMouseLeave={startAuto}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* overflow clips at the content edge (inside the padding), so the
             next page can never peek through the side padding */}
         <div className="overflow-hidden">

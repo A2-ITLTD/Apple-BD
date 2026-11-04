@@ -9,6 +9,7 @@ import Footer from "@/components/layout/Footer";
 import TypographicHero from "@/components/home/TypographicHero";
 import { StoreSettingsProvider } from "@/components/context/StoreSettingsContext";
 import FaviconManager from "@/components/layout/FaviconManager";
+import MessengerFloat from "@/components/ui/MessengerFloat";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
 
@@ -253,6 +254,8 @@ export default function LayoutWrapper({ children }) {
         )}
 
         <main className="flex-1">{children}</main>
+
+        {!hideNav && <MessengerFloat />}
 
         {!hideNav && isHome && <TypographicHero />}
 

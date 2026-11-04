@@ -196,7 +196,7 @@ export default function OccasionSections() {
   if (!sections.length) return null;
 
   return (
-    <div className="space-y-10 px-3 md:px-6 max-w-screen-xl mx-auto py-6">
+    <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {sections.map((section) => (
         <div key={section._id}>
           {/* Header */}
@@ -209,7 +209,7 @@ export default function OccasionSections() {
                 ? section.viewAllLink
                 : undefined
             }
-            seeMoreLabel={t("home.see_more")}
+            seeMoreLabel={t("home.view_all")}
           />
 
           <OccasionSlider section={section} />

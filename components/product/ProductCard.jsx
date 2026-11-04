@@ -33,7 +33,7 @@ export default function ProductCard({
   imageQuality = 100,
   showActionsOnHover = true,
   showDiscount = true,
-  maxTags = 3,
+  maxTags = 2,
   loading = false,
   imageFit = "contain",
 }) {
@@ -62,7 +62,7 @@ export default function ProductCard({
   if (loading || !product) {
     // simple skeleton card placeholder
     return (
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col h-full">
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col h-full">
         <Skeleton className="w-full h-[200px]" />
         <div className="p-3 flex flex-col grow">
           <Skeleton className="h-4 mb-2 w-3/4" />
@@ -78,9 +78,13 @@ export default function ProductCard({
     discountPct: resolvedDiscount,
   } = getDisplayPrice(product);
   const discountPct = showDiscount ? resolvedDiscount : null;
+  const averageRating = Number(product.averageRating) || 0;
+  const reviewCount = Number(product.reviewCount) || 0;
+  const hasReviews = reviewCount > 0 && averageRating > 0;
 
   // badge config — priority order determines which show first
   const BADGE_PRIORITY = [
+    "pre_order",
     "free_shipping",
     "flash_sale",
     "hot",
@@ -101,6 +105,7 @@ export default function ProductCard({
   const CHIP =
     "bg-white/85 text-[#1D1D1F] ring-1 ring-black/10 backdrop-blur-sm shadow-sm";
   const BADGE_MAP = {
+    pre_order: { label: "Pre-Order", cls: CHIP },
     best_seller: { label: "Best Seller", cls: SOLID },
     hot: { label: "Hot", cls: SOLID },
     new_arrival: { label: "New", cls: CHIP },
@@ -117,6 +122,7 @@ export default function ProductCard({
 
   // collect active flag-based pseudo-badges
   const flagBadges = [
+    product.availability === "pre_order" && "pre_order",
     product.freeShipping && "free_shipping",
     product.flashSale && "flash_sale",
     product.featured && "featured",
@@ -152,6 +158,12 @@ export default function ProductCard({
   const image = encodeURI(currentImage());
   // Always fly the resting/main image to the cart — never the hover-preview image
   const mainImage = encodeURI(images[currentImageIndex]);
+  const imageFitClass =
+    imageFit === "cover-mobile-tablet"
+      ? "object-cover lg:object-contain"
+      : imageFit === "contain"
+        ? "object-contain"
+        : "object-cover";
 
   const id = product._id || product.id;
   const isOutOfStock =
@@ -173,7 +185,7 @@ export default function ProductCard({
   return (
     <>
       <div
-        className="relative bg-white border border-gray-200 ring-1 ring-black/[0.02] rounded-sm shadow-premium group hover:shadow-premium-hover hover:-translate-y-1.5 hover:border-gray-300 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col cursor-pointer h-full overflow-hidden"
+        className="relative bg-white border border-gray-200 ring-1 ring-black/[0.02] rounded-2xl shadow-premium group hover:shadow-premium-hover hover:-translate-y-1 hover:border-gray-300 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col cursor-pointer h-full overflow-hidden"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -187,7 +199,7 @@ export default function ProductCard({
           <span className="sr-only">{product.title || product.slug}</span>
         </Link>
         <div
-          className="relative rounded-t-sm overflow-hidden border-b border-gray-100 bg-linear-to-b from-white to-[#F5F5F7]"
+          className="relative rounded-t-2xl overflow-hidden border-b border-gray-100 bg-linear-to-b from-white to-[#F5F5F7]"
           style={{ height: imageHeight }}
         >
           <div className="absolute inset-0  flex items-center justify-center overflow-hidden">
@@ -209,7 +221,7 @@ export default function ProductCard({
               // hover zoom (GPU compositing avoids the soft/blurry sub-pixel
               // interpolation you get scaling an <img> on the CPU).
               style={{ transform: "translateZ(0)", backfaceVisibility: "hidden" }}
-              className={`w-full h-full ${imageFit === "contain" ? "object-contain p-2" : "object-cover"} will-change-transform group-hover:scale-[1.06] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer`}
+              className={`w-full h-full ${imageFitClass} will-change-transform group-hover:scale-[1.04] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer`}
             />
           </div>
 
@@ -234,21 +246,12 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Overlay: discount LEFT, tags RIGHT — hidden on hover to show action buttons */}
-          <div className="absolute inset-x-0 top-0 flex items-start justify-between p-1.5 pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
-            {/* Discount badge — top left */}
-            <div>
+          {/* Unified badge stack — hidden on hover to show action buttons */}
+          <div className="absolute top-0 left-0 max-w-[78%] p-1.5 pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
+            <div className="flex flex-col items-start gap-1">
               {discountPct && (
-                <span className="bg-[#1D1D1F]/90 text-white text-[10px] font-bold px-2 py-1 rounded-full leading-none shadow-sm backdrop-blur-sm ring-1 ring-white/10">
+                <span className="inline-flex min-h-5 items-center rounded-full bg-[#1D1D1F]/90 px-2 text-[9px] font-bold leading-none text-white shadow-sm ring-1 ring-white/10 backdrop-blur-sm">
                   -{discountPct}%
-                </span>
-              )}
-            </div>
-            {/* Tags — top right, stacked */}
-            <div className="flex flex-col items-end gap-0.5">
-              {product.availability === "pre_order" && (
-                <span className={`${CHIP} text-[9px] font-semibold tracking-wide px-2 py-0.5 rounded-full leading-none`}>
-                  Pre-Order
                 </span>
               )}
               {visibleTags.map((b) => {
@@ -261,7 +264,7 @@ export default function ProductCard({
                 return (
                   <span
                     key={b}
-                    className={`${badge.cls} text-[9px] font-semibold tracking-wide px-2 py-0.5 rounded-full leading-none`}
+                    className={`inline-flex min-h-5 items-center rounded-full px-2 text-[9px] font-semibold leading-none tracking-wide ${badge.cls}`}
                   >
                     {badge.label}
                   </span>
@@ -271,7 +274,7 @@ export default function ProductCard({
           </div>
 
           <div
-            className={`absolute top-2 right-2 z-30 flex flex-col items-center gap-2.5 transition-opacity duration-300 pointer-events-none ${showActionsOnHover ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+            className={`absolute top-2 right-2 z-30 flex flex-col items-center gap-2.5 transition-opacity duration-300 pointer-events-none ${showActionsOnHover ? "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100" : "opacity-100"}`}
           >
             <button
               onClick={(e) => {
@@ -310,37 +313,53 @@ export default function ProductCard({
           </div>
         </div>
 
-        <div className="px-2 py-1.5 sm:px-3 sm:py-1.5 flex flex-col grow">
-          <h3 className="text-xs sm:text-[13px] font-semibold text-[#1F2937] leading-snug truncate">
+        <div className="p-3 sm:p-4 flex flex-col grow">
+          <h3
+            title={product.title || product.slug}
+            className="min-h-[2.5em] line-clamp-2 text-[13px] sm:text-sm font-semibold text-[#1F2937] leading-snug"
+          >
             {product.title || product.slug}
           </h3>
+          {hasReviews && (
+            <div
+              className="mt-1 flex items-center gap-1 text-xs text-[#6B7280]"
+              aria-label={`${averageRating.toFixed(1)} out of 5, ${reviewCount} ${t("product.reviews")}`}
+            >
+              <FaStar className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden="true" />
+              <span className="font-semibold text-[#1F2937]">
+                {Math.min(5, averageRating).toFixed(1)}
+              </span>
+              <span aria-hidden="true">·</span>
+              <span>
+                {reviewCount} {t("product.reviews")}
+              </span>
+            </div>
+          )}
           {product.description && (
-            <p className="text-xs text-[#6B7280] mb-1 truncate">
+            <p className="text-xs text-[#6B7280] mb-1 line-clamp-1">
               {product.description}
             </p>
           )}
 
-          {/* Price + swatches on one tight row */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-baseline gap-1.5 min-w-0">
-              <span className="text-[15px] sm:text-[17px] font-bold text-[#1D1D1F] tracking-tight whitespace-nowrap">
+          {/* Price and desktop color options share one compact row. */}
+          <div className="flex min-w-0 items-center justify-between gap-1.5">
+            <div className="flex min-w-0 items-baseline gap-1.5">
+              <span className="whitespace-nowrap text-base font-bold tracking-tight text-[#1D1D1F] sm:text-lg">
                 ৳{price?.toLocaleString()}
               </span>
               {compareAt && compareAt > price && (
-                <span className="text-xs text-gray-400 line-through whitespace-nowrap">
+                <span className="whitespace-nowrap text-xs text-gray-400 line-through">
                   ৳{compareAt?.toLocaleString()}
                 </span>
               )}
             </div>
-            {/* Color swatches - extracted from variants. Clicking a swatch
-                switches the card image to the image mapped to that color. */}
             {(() => {
               const variantColors = getVariantColors(product);
               if (variantColors.length === 0) return null;
               const colorImageMap = getColorImageMap(product);
               return (
-                <div className="relative z-[2] flex items-center gap-1 shrink-0">
-                  {variantColors.slice(0, 4).map((c, i) => {
+                <div className="relative z-[2] hidden shrink-0 items-center gap-0.5 lg:flex">
+                  {variantColors.slice(0, 3).map((c, i) => {
                     const hex = c.hex?.trim()
                       ? c.hex.startsWith("#")
                         ? c.hex
@@ -359,7 +378,6 @@ export default function ProductCard({
                           e.preventDefault();
                           e.stopPropagation();
                           if (isSelected) {
-                            // Toggle off — deselect the color and revert image
                             setSelectedColor(null);
                             setCurrentImageIndex(0);
                             return;
@@ -372,19 +390,24 @@ export default function ProductCard({
                             if (idx >= 0) setCurrentImageIndex(idx);
                           }
                         }}
-                        className={`pointer-events-auto w-3.5 h-3.5 rounded-full inline-block border transition-all ${
+                        className={`pointer-events-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/50 focus-visible:ring-offset-1 ${
                           isSelected
-                            ? "ring-2 ring-offset-1 ring-[#1D1D1F] border-white"
-                            : "border-gray-200 hover:scale-110"
+                            ? "ring-2 ring-[#1D1D1F] ring-offset-1"
+                            : "hover:bg-gray-100"
                         }`}
-                        style={{ backgroundColor: hex }}
                         aria-label={`Show ${c.name}`}
-                      />
+                        aria-pressed={isSelected}
+                      >
+                        <span
+                          className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-sm"
+                          style={{ backgroundColor: hex }}
+                        />
+                      </button>
                     );
                   })}
-                  {variantColors.length > 4 && (
-                    <span className="text-[10px] text-gray-400 leading-4">
-                      +{variantColors.length - 4}
+                  {variantColors.length > 3 && (
+                    <span className="px-1 text-[10px] leading-4 text-gray-500">
+                      +{variantColors.length - 3}
                     </span>
                   )}
                 </div>
@@ -400,7 +423,7 @@ export default function ProductCard({
           )}
 
           {isOutOfStock ? (
-            <div className="relative z-2 mt-1.5 flex gap-1.5">
+            <div className="relative z-2 mt-auto pt-2 flex gap-1.5">
               <button
                 disabled
                 className="bg-gray-100 text-gray-500 py-2 px-2 rounded-full text-[10px] font-medium cursor-not-allowed whitespace-nowrap"
@@ -419,7 +442,7 @@ export default function ProductCard({
               </button>
             </div>
           ) : (
-            <div className="relative z-2 mt-1.5 flex gap-1.5">
+            <div className="relative z-2 mt-auto pt-2 flex gap-1.5">
               {/* Buy Now — light gray, straight to checkout */}
               <button
                 onClick={(e) => {
@@ -431,7 +454,7 @@ export default function ProductCard({
                   });
                   router.push("/checkout");
                 }}
-                className="flex-1 bg-[#E5F3FF] border border-gray-200/80 text-[#1D1D1F] py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold hover:bg-[#E8E8ED] hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer"
+                className="flex-1 bg-white border border-gray-300 text-[#1D1D1F] py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold hover:bg-gray-50 hover:border-gray-400 active:scale-[0.98] transition-all cursor-pointer"
               >
                 {t("product.buy_now")}
               </button>

@@ -77,10 +77,10 @@ const ScrollToTop = () => {
           {/* Main button */}
           <motion.button
             onClick={scrollToTop}
-            className="relative flex items-center justify-center
-                       w-8 h-8 rounded-full
-                       bg-gradient-to-br from-[#d0d0d4] to-[#31454e]
-                       text-black shadow-2xl
+             className="relative flex items-center justify-center
+                        w-8 h-8 rounded-full
+                        bg-[#1D1D1F]
+                        text-white shadow-2xl
                        hover:shadow-primary/30
                        transition-all duration-300
                        group"
@@ -111,7 +111,7 @@ const ScrollToTop = () => {
               }}
               className="relative z-10"
             >
-              <FaArrowUp className="text-sm" />
+              <FaArrowUp className="text-sm text-white" />
             </motion.div>
 
             {/* Tooltip */}

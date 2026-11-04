@@ -1,4 +1,4 @@
-import PolicyTabs from "@/components/Policy/Sidebar";
+import HelpPageNav from "@/components/Policy/HelpPageNav";
 import { siteTitle, getStoreName, getAboutContent } from "@/lib/storeMeta";
 
 export async function generateMetadata() {
@@ -86,8 +86,8 @@ export default async function AboutPage() {
   const stats = aboutContent?.stats?.length ? aboutContent.stats : STATS;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10 sm:py-16">
-      <PolicyTabs />
+    <div className="max-w-7xl mx-auto px-4 pt-2 pb-10 sm:pt-3 sm:pb-16">
+      <HelpPageNav />
 
       <div className="space-y-6">
         <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#1D1D1F] via-gray-800 to-gray-700 p-8 text-white shadow-lg shadow-gray-300 sm:p-12">

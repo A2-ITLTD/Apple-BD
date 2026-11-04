@@ -180,6 +180,7 @@ body {
   color: var(--foreground);
   font-family:
     var(--font-work-sans),
+    var(--font-noto-sans-bengali),
     "Work Sans",
     system-ui,
     -apple-system,
@@ -212,10 +213,17 @@ h4,
 h5,
 h6 {
   font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    var(--font-work-sans), "Work Sans", "Helvetica Neue", Arial, sans-serif;
-  /* tight negative tracking is the signature of Apple display type */
-  letter-spacing: -0.022em;
+    var(--font-work-sans),
+    var(--font-noto-sans-bengali),
+    "Work Sans",
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.015em;
+}
+
+h1,
+h2 {
+  letter-spacing: -0.02em;
 }
 
 /* ── Premium surface + elevation helpers ─────────────────────────────────────
@@ -358,7 +366,11 @@ h6 {
 /* open links inserted via editor in a new tab by default */
 
 .work-sans {
-  font-family: "Work Sans", sans-serif;
+  font-family:
+    var(--font-work-sans),
+    var(--font-noto-sans-bengali),
+    "Work Sans",
+    sans-serif;
   font-optical-sizing: auto;
   font-weight: 600;
   font-style: normal;
@@ -369,9 +381,12 @@ h6 {
    usages flip in one place rather than being renamed across the codebase — it
    no longer renders Georgia. Use it for heading-like text that isn't a real
    h1-h6 tag; prefer adding new headings as real h1-h6 which inherit the stack. */
+.font-display,
 .font-georgia {
   font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    var(--font-work-sans), "Work Sans", "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.022em;
+    var(--font-work-sans),
+    var(--font-noto-sans-bengali),
+    "Work Sans",
+    sans-serif;
+  letter-spacing: -0.015em;
 }

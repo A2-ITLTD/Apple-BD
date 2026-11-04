@@ -1,4 +1,4 @@
-import PolicyTabs from "@/components/Policy/Sidebar";
+import HelpPageNav from "@/components/Policy/HelpPageNav";
 import PolicyHeader from "@/components/Policy/PolicyHeader";
 import { siteTitle, getStoreName, getPolicyContent } from "@/lib/storeMeta";
 
@@ -24,8 +24,8 @@ export default async function PrivacyPage() {
   const sections = policyContent?.privacy || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10 sm:py-16">
-      <PolicyTabs />
+    <div className="max-w-7xl mx-auto px-4 pt-2 pb-10 sm:pt-3 sm:pb-16">
+      <HelpPageNav />
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
         <PolicyHeader
           icon={PRIVACY_ICON}

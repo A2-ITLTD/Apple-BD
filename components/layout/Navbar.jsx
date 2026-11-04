@@ -399,34 +399,37 @@ export default function Navbar() {
 
   const isActive = (href) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const isAllProductsPage = pathname === "/products" || pathname === "/products/";
 
   return (
     <header className="relative bg-transparent z-50 work-sans">
-      <div className="flex items-center justify-between max-w-7xl  md:px-3  lg:px-4 mx-auto h-12 md:h-14">
+      <div className="flex items-center justify-between max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto h-12 md:h-14">
         {/* Left: hamburger (mobile) + logo */}
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setCatSidebarOpen((v) => !v)}
-            className="px-2 text-gray-800 hover:text-[#1D1D1F] lg:hidden"
-            aria-label="Categories"
-            title="Categories"
-          >
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="stroke-current"
+          {!isAllProductsPage && (
+            <button
+              onClick={() => setCatSidebarOpen((v) => !v)}
+              className="px-2 text-gray-800 hover:text-[#1D1D1F] lg:hidden"
+              aria-label="Categories"
+              title="Categories"
             >
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
+              <svg
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="stroke-current"
+              >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          )}
           <WebsiteLogo />
         </div>
 
@@ -436,9 +439,9 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors ${
+              className={`relative py-1 text-sm font-medium transition-colors after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-black after:transition-transform after:duration-300 hover:after:scale-x-100 focus-visible:after:scale-x-100 ${
                 isActive(link.href)
-                  ? "text-[#1D1D1F]"
+                  ? "text-[#1D1D1F] after:scale-x-100"
                   : "text-gray-800 hover:text-[#1D1D1F]"
               }`}
             >
@@ -448,7 +451,7 @@ export default function Navbar() {
         </nav>
 
         {/* Right: actions */}
-        <div className="flex items-center gap-0 md:gap-0.5">
+        <div className="-mr-1 flex items-center gap-0 md:gap-0.5">
           {/* Track order */}
           <Link
             href="/track-order"

@@ -122,7 +122,7 @@ const Banner = () => {
 
       {/* ── Left image — pulled inward from the edge and sized down via the
              vertical padding so it never crowds the navbar or the centre text ── */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-[30%] sm:left-[2%] sm:w-[24%] md:left-[4%] md:w-[23%] lg:left-[12%] lg:w-[27%]">
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-[30%] sm:left-[2%] sm:w-[24%] md:left-[4%] md:w-[23%] lg:left-[5%] lg:w-[23%]">
         {slides.map((s, i) => (
           <div
             key={`l-${s._id || i}`}
@@ -146,7 +146,7 @@ const Banner = () => {
       </div>
 
       {/* ── Right image (each slide's own rightImage, falls back to its left) ── */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-[30%] sm:right-[2%] sm:w-[24%] md:right-[4%] md:w-[23%] lg:right-[12%] lg:w-[27%]">
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-[30%] sm:right-[2%] sm:w-[24%] md:right-[4%] md:w-[23%] lg:right-[5%] lg:w-[23%]">
         {slides.map((s, i) => (
           <div
             key={`r-${s._id || i}`}
@@ -170,7 +170,7 @@ const Banner = () => {
       </div>
 
       {/* ── Centre content (top padding clears the transparent navbar) ── */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pt-12 text-center sm:px-2 md:pt-14">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pt-12 pb-16 text-center sm:px-2 sm:pb-20 md:pt-14 md:pb-24">
         {slide.badge && (
           <span className="mb-2 inline-block rounded-full border border-black/10 bg-white/60 px-2.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-[#1D1D1F] backdrop-blur-md sm:mb-4 sm:px-4 sm:py-1.5 sm:tracking-[0.22em] sm:text-[11px]">
             {slide.badge}
@@ -180,7 +180,7 @@ const Banner = () => {
         {slide.title && (
           <h1
             onClick={goToLink}
-            className={`${playfair.className} max-w-[40%] cursor-pointer text-xl font-bold uppercase leading-[1.05] tracking-tight text-[#1D1D1F] text-balance min-[420px]:text-2xl sm:max-w-[46%] sm:text-4xl md:max-w-[46%] md:text-5xl lg:max-w-md lg:text-6xl`}
+           className={`${playfair.className} max-w-[40%] cursor-pointer text-xl font-bold uppercase leading-[1.05] tracking-tight text-[#1D1D1F] text-balance min-[420px]:text-2xl sm:max-w-[46%] sm:text-4xl md:max-w-[46%] md:text-5xl lg:max-w-[40%] lg:text-6xl`}
           >
             {renderHighlight(slide.title)}
           </h1>
@@ -192,51 +192,54 @@ const Banner = () => {
           </p>
         )}
 
-        {slide.buttonText && slide.buttonLink && (
-          <Link
-            href={slide.buttonLink}
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.12) 100%)",
-              boxShadow:
-                "inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -3px 6px rgba(255,255,255,0.45), inset 0 0 0 1px rgba(255,255,255,0.4), inset 6px 0 12px -6px rgba(255,255,255,0.6), inset -6px 0 12px -6px rgba(255,255,255,0.6), 0 20px 35px -12px rgba(30,40,60,0.4)",
-            }}
-            className="group relative mt-4 inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-white/50 px-4 py-2 text-[8px] font-semibold uppercase tracking-[0.12em] text-[#1D1D1F] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 min-[420px]:px-6 min-[420px]:py-3 min-[420px]:text-[10px] sm:mt-7 sm:gap-2 sm:px-10 sm:py-4 sm:tracking-[0.18em] sm:text-sm"
-          >
-            {/* bright glossy specular sweep across the top half */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-1.5 top-[3px] h-1/2 rounded-full bg-linear-to-b from-white/95 via-white/40 to-transparent blur-[1px]"
-            />
-            {/* faint reflection along the bottom edge */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-6 bottom-[3px] h-1/4 rounded-full bg-linear-to-t from-white/45 to-transparent blur-[2px]"
-            />
-            {/* soft reflection glint near the right end */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute right-4 top-1/2 h-6 w-9 -translate-y-1/2 rounded-full bg-white/60 blur-md"
-            />
-            <span className="relative z-10 inline-flex items-center gap-2">
-              {slide.buttonText}
-              <svg
-                className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 12h14M13 6l6 6-6 6"
-                />
-              </svg>
-            </span>
-          </Link>
-        )}
       </div>
+
+      {/* Keep the call-to-action at a consistent height across slides, even
+          when headline and description lengths differ. */}
+      {slide.buttonText && slide.buttonLink && (
+        <Link
+          href={slide.buttonLink}
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.12) 100%)",
+            boxShadow:
+              "inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -3px 6px rgba(255,255,255,0.45), inset 0 0 0 1px rgba(255,255,255,0.4), inset 6px 0 12px -6px rgba(255,255,255,0.6), inset -6px 0 12px -6px rgba(255,255,255,0.6), 0 20px 35px -12px rgba(30,40,60,0.4)",
+          }}
+          className="group absolute bottom-12 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-1.5 overflow-hidden rounded-full border border-white/50 px-4 py-2 text-[8px] font-semibold uppercase tracking-[0.12em] text-[#1D1D1F] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 min-[420px]:px-6 min-[420px]:py-3 min-[420px]:text-[10px] sm:bottom-16 sm:gap-2 sm:px-10 sm:py-4 sm:tracking-[0.18em] sm:text-sm md:bottom-20"
+        >
+          {/* bright glossy specular sweep across the top half */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-1.5 top-[3px] h-1/2 rounded-full bg-linear-to-b from-white/95 via-white/40 to-transparent blur-[1px]"
+          />
+          {/* faint reflection along the bottom edge */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-6 bottom-[3px] h-1/4 rounded-full bg-linear-to-t from-white/45 to-transparent blur-[2px]"
+          />
+          {/* soft reflection glint near the right end */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-4 top-1/2 h-6 w-9 -translate-y-1/2 rounded-full bg-white/60 blur-md"
+          />
+          <span className="relative z-10 inline-flex items-center gap-2">
+            {slide.buttonText}
+            <svg
+              className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 12h14M13 6l6 6-6 6"
+              />
+            </svg>
+          </span>
+        </Link>
+      )}
 
       {/* ── Dots ── */}
       {total > 1 && (

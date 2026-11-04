@@ -210,9 +210,40 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const [magnify, setMagnify] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const imgBoxRef = React.useRef(null);
+  const thumbnailStripRef = React.useRef(null);
+  const [thumbnailScroll, setThumbnailScroll] = useState({ left: false, right: false });
   // touch swipe state for zoom modal
   const touchStartX = React.useRef(null);
   const currentImage = images[currentIndex] || "/assets/placeholder.svg";
+
+  const updateThumbnailScroll = React.useCallback(() => {
+    const strip = thumbnailStripRef.current;
+    if (!strip) return;
+    setThumbnailScroll({
+      left: strip.scrollLeft > 1,
+      right: strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1,
+    });
+  }, []);
+
+  const scrollThumbnails = (direction) => {
+    thumbnailStripRef.current?.scrollBy({
+      left: direction * 140,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    const strip = thumbnailStripRef.current;
+    if (!strip) return;
+    const frame = window.requestAnimationFrame(updateThumbnailScroll);
+    strip.addEventListener("scroll", updateThumbnailScroll, { passive: true });
+    window.addEventListener("resize", updateThumbnailScroll);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      strip.removeEventListener("scroll", updateThumbnailScroll);
+      window.removeEventListener("resize", updateThumbnailScroll);
+    };
+  }, [images.length, updateThumbnailScroll]);
 
   const handleMagnifyMove = (e) => {
     const rect = imgBoxRef.current?.getBoundingClientRect();
@@ -564,30 +595,57 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         {/* ── LEFT: image gallery (wider, sticky) ── */}
         <div className="lg:col-span-6">
-          <div className="lg:sticky lg:top-24 flex flex-col-reverse sm:flex-row gap-3">
-            {/* Vertical thumbnail rail (horizontal on mobile) */}
+          <div className="lg:sticky lg:top-24 flex flex-col-reverse gap-3">
+            {/* Horizontal thumbnail strip below the main image */}
             {images.length > 1 && (
-              <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-x-visible sm:overflow-y-auto sm:max-h-[560px] sm:w-[74px] shrink-0 pb-1 sm:pb-0 sm:pr-1">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentIndex(idx)}
-                    onMouseEnter={() => isDesktop && setCurrentIndex(idx)}
-                    className={`w-14 h-14 sm:w-[70px] sm:h-[70px] shrink-0 rounded-xl border-2 overflow-hidden transition bg-white ${
-                      currentIndex === idx
-                        ? "border-[#1D1D1F] ring-2 ring-gray-100 shadow-md"
-                        : "border-gray-100 hover:border-gray-300"
-                    }`}
-                  >
-                    <Image
-                      src={encodeURI(img)}
-                      alt={`${title} ${idx + 1}`}
-                      width={70}
-                      height={70}
-                      className="object-contain w-full h-full p-0.5"
-                    />
-                  </button>
-                ))}
+              <div className="relative mx-auto min-w-0 w-full max-w-[540px] shrink-0">
+                <div
+                  ref={thumbnailStripRef}
+                  onScroll={updateThumbnailScroll}
+                  className={`no-scrollbar flex w-full gap-2 overflow-x-auto pb-1 ${thumbnailScroll.left || thumbnailScroll.right ? "px-8" : ""}`}
+                >
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 bg-white transition sm:h-[70px] sm:w-[70px] lg:h-20 lg:w-20 ${
+                        currentIndex === idx
+                          ? "border-[#1D1D1F] ring-2 ring-gray-100 shadow-md"
+                          : "border-gray-100 hover:border-gray-300"
+                      }`}
+                    >
+                      <Image
+                        src={encodeURI(img)}
+                        alt={`${title} ${idx + 1}`}
+                        width={70}
+                        height={70}
+                        className="h-full w-full object-contain p-0.5"
+                      />
+                    </button>
+                  ))}
+                </div>
+                {(thumbnailScroll.left || thumbnailScroll.right) && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => scrollThumbnails(-1)}
+                      disabled={!thumbnailScroll.left}
+                      aria-label="Scroll thumbnails left"
+                      className="absolute left-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-md transition hover:bg-[#1D1D1F] hover:text-white disabled:pointer-events-none disabled:opacity-30 sm:h-8 sm:w-8"
+                    >
+                      <FaChevronLeft className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollThumbnails(1)}
+                      disabled={!thumbnailScroll.right}
+                      aria-label="Scroll thumbnails right"
+                      className="absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-md transition hover:bg-[#1D1D1F] hover:text-white disabled:pointer-events-none disabled:opacity-30 sm:h-8 sm:w-8"
+                    >
+                      <FaChevronRight className="h-3 w-3" />
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
@@ -619,7 +677,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                     alt={title}
                     width={700}
                     height={700}
-                    className="w-full h-full object-contain p-2 md:p-4"
+                    className="w-full h-full object-cover"
                   />
                 </button>
                 {/* In-place zoom — magnifies inside the image box itself on

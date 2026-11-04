@@ -204,8 +204,8 @@ export default function WhyChooseUs() {
   const hasConfigured = configuredPics.length > 0 || legacyPic.length > 0;
 
   return (
-    <section className="w-full py-4 md:py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section className="w-full bg-[#F0F9FF] py-4 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section title with the About/CTA pill on the right of the heading */}
         <SectionHeader
           title={title}

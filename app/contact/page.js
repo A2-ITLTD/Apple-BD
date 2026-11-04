@@ -1,4 +1,4 @@
-import PolicyTabs from "@/components/Policy/Sidebar";
+import HelpPageNav from "@/components/Policy/HelpPageNav";
 import ContactContent from "@/components/ContactContent";
 import { siteTitle, getStoreName } from "@/lib/storeMeta";
 
@@ -21,8 +21,8 @@ export async function generateMetadata() {
 
 export default function ContactPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10 sm:py-16">
-      <PolicyTabs />
+      <div className="max-w-7xl mx-auto px-4 pt-2 pb-10 sm:pt-3 sm:pb-16">
+      <HelpPageNav />
       <ContactContent />
     </div>
   );

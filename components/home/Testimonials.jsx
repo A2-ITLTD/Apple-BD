@@ -67,7 +67,7 @@ function VerifiedBadge({ featured }) {
       className="absolute -top-0.5 -right-0.5 flex items-center justify-center z-10 bg-white rounded-full"
     >
       <MdVerified
-        className={`text-[#1D1D1F] ${featured ? "w-5 h-5" : "w-4 h-4"}`}
+        className={`text-[#1D1D1F] ${featured ? "w-4 h-4" : "w-3.5 h-3.5"}`}
       />
     </span>
   );
@@ -84,19 +84,27 @@ function TestimonialCard({ item, featured }) {
     >
       <span
         aria-hidden="true"
-        className="work-sans font-bold text-6xl md:text-8xl text-[#F5F6F7] absolute -top-3 md:-top-5 right-4 select-none leading-none pointer-events-none"
+        className="work-sans -mb-2 select-none text-7xl font-bold leading-none text-[#E5E7EB] pointer-events-none md:text-8xl"
       >
-        &rdquo;
+        &ldquo;
       </span>
 
-      <div className="relative flex items-center gap-3 md:gap-4">
+      <p
+        className={`relative text-[#374151] leading-snug sm:leading-relaxed flex-1 ${
+          featured ? "text-[13px] sm:text-base md:text-[17px]" : "text-sm"
+        }`}
+      >
+        {item.message}
+      </p>
+
+      <div className="relative mt-5 flex items-center gap-3 border-t border-gray-100 pt-4 md:gap-4">
         <div
           className={`relative shrink-0 ${
-            featured ? "w-12 h-12 sm:w-20 sm:h-20 md:w-24 md:h-24" : "w-14 h-14"
+            featured ? "w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14" : "w-10 h-10"
           }`}
         >
           <div
-            className={`relative w-full h-full rounded-full overflow-hidden bg-[#F5F6F7] ring-4 shadow-sm ${
+            className={`relative w-full h-full rounded-full overflow-hidden bg-[#F5F6F7] ring-2 shadow-sm ${
               featured ? "ring-[#1D1D1F]/10" : "ring-[#F5F6F7]"
             }`}
           >
@@ -124,7 +132,7 @@ function TestimonialCard({ item, featured }) {
         <div className="min-w-0">
           <p
             className={`work-sans font-semibold text-[#1F2937] truncate ${
-              featured ? "text-sm sm:text-xl md:text-2xl" : "text-base"
+              featured ? "text-sm sm:text-base md:text-lg" : "text-sm"
             }`}
           >
             {item.name}
@@ -132,25 +140,15 @@ function TestimonialCard({ item, featured }) {
           {item.address && (
             <p
               className={`text-[#6B7280] truncate mt-0.5 mb-1 sm:mb-1.5 ${
-                featured ? "text-[11px] sm:text-sm md:text-base" : "text-xs"
+                featured ? "text-[10px] sm:text-xs" : "text-[10px]"
               }`}
             >
               {item.address}
             </p>
           )}
-          <div className={item.address ? "" : "mt-1.5"}>
-            <Stars rating={item.rating || 5} />
-          </div>
+          <Stars rating={item.rating || 5} />
         </div>
       </div>
-
-      <p
-        className={`relative text-[#374151] leading-snug sm:leading-relaxed mt-3 sm:mt-5 md:mt-7 flex-1 ${
-          featured ? "text-[13px] sm:text-base md:text-[17px]" : "text-sm"
-        }`}
-      >
-        {item.message}
-      </p>
     </div>
   );
 }
@@ -170,6 +168,23 @@ export default function Testimonials() {
   }, []);
 
   const n = items.length;
+
+  // Warm the adjacent customer avatars before their cards are shown. The card
+  // animation remounts on review changes, but cached images then appear without
+  // an additional visible load delay.
+  useEffect(() => {
+    if (n < 2) return;
+    const adjacentItems = [
+      items[(currentIndex + 1) % n],
+      items[(currentIndex - 1 + n) % n],
+    ];
+    adjacentItems.forEach((item) => {
+      const url = item?.avatar?.url;
+      if (!url) return;
+      const preloadedImage = new window.Image();
+      preloadedImage.src = url;
+    });
+  }, [currentIndex, items, n]);
 
   const startAuto = useCallback(() => {
     clearInterval(autoRef.current);
@@ -198,7 +213,7 @@ export default function Testimonials() {
 
   return (
     <section className="w-full py-8 md:py-14">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader title={t("home.testimonials_title")} />
 
         <div

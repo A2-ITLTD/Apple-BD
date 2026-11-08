@@ -93,6 +93,15 @@ export default function SearchBox({
     router.push(`/search?q=${encodeURIComponent(term.trim())}`);
   };
 
+  const openProduct = (product) => {
+    const id = product?._id || product?.id;
+    if (!id) return;
+    setOpen(false);
+    onClose?.();
+    logSearch(product.title || query);
+    router.push(`/product/${encodeURIComponent(id)}/`);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     navigate(query);
@@ -109,7 +118,7 @@ export default function SearchBox({
     } else if (e.key === "Enter") {
       if (activeIndex >= 0 && suggestions[activeIndex]) {
         e.preventDefault();
-        navigate(suggestions[activeIndex].title);
+        openProduct(suggestions[activeIndex]);
       }
       // else natural form submit handles it
     } else if (e.key === "Escape") {
@@ -197,7 +206,7 @@ export default function SearchBox({
                     <li key={product._id}>
                       <button
                         type="button"
-                        onMouseDown={() => navigate(product.title)}
+                        onMouseDown={() => openProduct(product)}
                         onMouseEnter={() => setActiveIndex(idx)}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${isActive ? "bg-red-50" : "hover:bg-gray-50"}`}
                       >

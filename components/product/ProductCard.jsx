@@ -167,7 +167,8 @@ export default function ProductCard({
 
   const id = product._id || product.id;
   const isOutOfStock =
-    product.availability === "out_of_stock" || product.inventory === 0;
+    product.availability !== "pre_order" &&
+    (product.availability === "out_of_stock" || product.inventory === 0);
   const href = `/product/${id}/`;
 
   // When the product has color variants but the shopper adds to cart without

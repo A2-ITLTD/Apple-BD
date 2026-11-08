@@ -651,6 +651,12 @@ function OrdersTable({
                   >
                     {statusBadgeText(order)}
                   </span>
+                ) : order.status === "cancelled" ? (
+                  <span
+                    className="inline-flex items-center text-xs font-medium px-2 py-1 rounded-full capitalize whitespace-nowrap bg-red-100 text-red-700"
+                  >
+                    {statusBadgeText(order)}
+                  </span>
                 ) : (
                   <button
                     type="button"

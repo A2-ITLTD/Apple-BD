@@ -67,7 +67,10 @@ function StarDisplay({ value = 0, count = 0 }) {
 }
 
 function StockBadge({ inventory, availability }) {
-  if (availability === "out_of_stock" || inventory === 0) {
+  if (
+    availability !== "pre_order" &&
+    (availability === "out_of_stock" || inventory === 0)
+  ) {
     return (
       <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600">
         <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
@@ -330,9 +333,11 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         priceCurrency: "BDT",
         price: product.price,
         availability:
-          product.availability === "out_of_stock"
-            ? "https://schema.org/OutOfStock"
-            : "https://schema.org/InStock",
+          product.availability === "pre_order"
+            ? "https://schema.org/PreOrder"
+            : product.availability === "out_of_stock"
+              ? "https://schema.org/OutOfStock"
+              : "https://schema.org/InStock",
         seller: { "@type": "Organization", name: "AppleBD" },
       },
       ...(product.averageRating > 0 && product.reviewCount > 0

@@ -1253,6 +1253,15 @@ export default function PolicyPagesEditor() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4">
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed right-4 top-4 z-[300] rounded-xl border border-green-200 bg-white px-4 py-3 text-sm font-medium text-green-800 shadow-lg"
+        >
+          {toast}
+        </div>
+      )}
       {/* Quick Setup banner — shown when DB is empty */}
       {totalItems === 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
@@ -1287,11 +1296,6 @@ export default function PolicyPagesEditor() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {toast && (
-              <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
-                {toast}
-              </span>
-            )}
             {POLICY_KEYS.includes(activeTab) && (
               <button
                 onClick={handleQuickSetup}

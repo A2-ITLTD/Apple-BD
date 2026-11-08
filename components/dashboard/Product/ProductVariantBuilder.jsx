@@ -760,6 +760,11 @@ export default function ProductVariantBuilder({
               </div>
             );
           })}
+          {(product.variants || []).length === 0 && (
+            <p className="rounded-lg bg-gray-50 px-3 py-2.5 text-xs leading-5 text-gray-600 sm:text-sm">
+              Choose options, then click <strong>Create variant rows</strong>.
+            </p>
+          )}
         </div>
 
         <div className="min-w-0">
@@ -775,11 +780,7 @@ export default function ProductVariantBuilder({
             </p>
           </div>
 
-          {(product.variants || []).length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center text-sm text-gray-500">
-              Select options and click Generate rows.
-            </div>
-          ) : (
+          {(product.variants || []).length > 0 ? (
             <div className="overflow-x-auto rounded-xl border border-gray-200">
               <table className="min-w-[1040px] w-full text-sm">
                 <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -997,7 +998,7 @@ export default function ProductVariantBuilder({
                 </tbody>
               </table>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </section>

@@ -654,7 +654,8 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
                         showDiscount={true}
                         maxTags={2}
                         imageWidth={400}
-                        imageHeight={isMobileView ? 190 : 250}
+                        imageHeight={isMobileView ? 150 : 220}
+                        imageFit="cover-mobile-tablet"
                       />
                     ))}
                   </div>

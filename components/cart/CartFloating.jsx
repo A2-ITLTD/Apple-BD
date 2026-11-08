@@ -30,8 +30,9 @@ export default function CartFloating() {
   const label = `${t("cart.open_label_prefix")} ${count} ${t("cart.items_label")}, ${t("cart.open_label_total")}${total}`;
 
   return (
-    // Mobile: sits just above the scroll-to-top button. Desktop: higher up.
-    <span className="fixed z-50 bottom-16 sm:bottom-26" style={{ right: 16 }}>
+    // Stack the cart above Messenger; Messenger stays in its lower position
+    // when the cart is empty and therefore hidden.
+    <span className="fixed z-50 bottom-[7.75rem]" style={{ right: 16 }}>
       {/* ping ring — always active like a map marker */}
       <span className="absolute inset-0 rounded-full bg-[#1D1D1F] opacity-30 animate-ping" />
       <button

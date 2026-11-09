@@ -91,6 +91,8 @@ export default function PromoStripSection() {
                   <img
                     src={item.image.url}
                     alt={item.title || "Offer"}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.src = "/assets/placeholder.svg";

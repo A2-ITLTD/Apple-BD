@@ -122,7 +122,7 @@ function TrustedBadge() {
   );
 }
 
-function CollageTile({ src, alt, className, onFail }) {
+function CollageTile({ src, alt, className, onFail, loading = "lazy" }) {
   const [broken, setBroken] = useState(false);
   return (
     <div className={`relative overflow-hidden bg-[#F5F6F7] ${className}`}>
@@ -131,6 +131,7 @@ function CollageTile({ src, alt, className, onFail }) {
           src={src}
           alt={alt}
           fill
+          loading={loading}
           sizes="(max-width: 768px) 50vw, 20vw"
           className="object-cover"
           onError={() => {
@@ -229,6 +230,7 @@ export default function WhyChooseUs() {
                     src={src}
                     alt={title}
                     className={TILES[i]}
+                    loading={i === 0 ? "eager" : "lazy"}
                     onFail={() => {
                       // Only collapse the whole column when we're relying on the
                       // built-in default (nothing configured) and it fails.

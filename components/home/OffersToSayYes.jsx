@@ -135,6 +135,7 @@ function OfferCard({ offer }) {
                 src={offer.image.url}
                 alt=""
                 loading="lazy"
+                decoding="async"
                 className="h-12 w-12 shrink-0 object-contain drop-shadow-sm sm:h-[72px] sm:w-[72px]"
               />
             )}

@@ -38,6 +38,7 @@ const nextConfig = {
   // },
   images: {
     unoptimized: true,
+    qualities: [75, 90, 100],
     remotePatterns: [
       // New uploads are served from our own backend's /uploads folder.
       { protocol: "https", hostname: "api.applebd.com" },

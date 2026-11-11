@@ -5,14 +5,13 @@ import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 
 export default function MessengerFloat() {
   const { socialLinks } = useStoreSettings();
-  const facebookUrl =
-    socialLinks?.facebook?.enabled !== false ? socialLinks?.facebook?.url : "";
+  const messengerEnabled = socialLinks?.facebook?.enabled !== false;
 
-  if (!facebookUrl) return null;
+  if (!messengerEnabled) return null;
 
   return (
     <a
-      href={facebookUrl}
+      href="https://m.me/101913646023588"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on Facebook"

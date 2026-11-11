@@ -1,9 +1,6 @@
 import HelpPageNav from "@/components/Policy/HelpPageNav";
-import PolicyHeader from "@/components/Policy/PolicyHeader";
-import { siteTitle, getStoreName, getPolicyContent } from "@/lib/storeMeta";
-
-const TERMS_ICON =
-  "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z";
+import LegalPolicyContent from "@/components/Policy/LegalPolicyContent";
+import { siteTitle, getStoreName } from "@/lib/storeMeta";
 
 export async function generateMetadata() {
   const [title, storeName] = await Promise.all([
@@ -16,41 +13,11 @@ export async function generateMetadata() {
   };
 }
 
-export default async function TermsPage() {
-  const [storeName, policyContent] = await Promise.all([
-    getStoreName(),
-    getPolicyContent(),
-  ]);
-  const sections = policyContent?.terms || [];
-
+export default function TermsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 pt-2 pb-10 sm:pt-3 sm:pb-16">
       <HelpPageNav />
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
-        <PolicyHeader
-          icon={TERMS_ICON}
-          title="Terms & Conditions"
-          subtitle="Please read before using the site"
-        />
-
-        {sections.length > 0 ? (
-          <>
-            <p className="text-sm text-[#6B7280] mb-6 leading-relaxed">
-              By using {storeName}, you agree to these terms and conditions.
-            </p>
-            <div className="space-y-6">
-              {sections.map((sec, i) => (
-                <section key={i} className="border-l-4 border-gray-300 pl-4">
-                  <h2 className="text-base font-semibold text-[#1F2937] mb-2">{sec.heading}</h2>
-                  <p className="text-sm text-[#6B7280] leading-relaxed whitespace-pre-line">{sec.content}</p>
-                </section>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className="text-sm text-gray-400">No information available.</p>
-        )}
-      </div>
+      <LegalPolicyContent type="terms" />
     </div>
   );
 }

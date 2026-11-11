@@ -711,7 +711,7 @@ export default function CheckoutPage() {
         // Cash on Delivery — set flag BEFORE clearing cart to suppress redirect
         orderPlaced.current = true;
         clearCart();
-        // Prefer the clean, human-friendly order number (e.g. apl0023) in the
+        // Prefer the clean, human-friendly order number (e.g. apl-1675) in the
         // confirmation URL; fall back to the raw id if it's ever missing.
         router.push(
           `/thankyou/success?orderId=${result.orderNumber || result.orderId}&method=cod`,

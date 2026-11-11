@@ -1517,7 +1517,7 @@ export default function UserSectionPage() {
       const data = await res.json();
       if (data.ok) {
         setIsEditing(false);
-        refreshUser();
+        await refreshUser({ force: true });
       } else {
         console.error("Profile save error", data);
         alert(data.error || "Failed to save profile");

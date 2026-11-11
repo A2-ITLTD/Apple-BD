@@ -34,6 +34,7 @@ import {
   getVariantImage,
   getVariantExtraGroups,
   getAvailableValues,
+  resolveVariantByAttrs,
 } from "@/components/cart/VariantEditModal";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductCard from "@/components/product/ProductCard";
@@ -382,7 +383,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     const seoImage = product.images?.[0]?.url || `${SITE_URL}/mainLogo.png`;
     const productUrl = `${SITE_URL}/product/${product._id}`;
 
-    const prevTitle = document.title;
     document.title = `${seoTitle} | AppleBD`;
 
     const setMeta = (selector, attr, value) => {
@@ -416,9 +416,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     }
     canonical.setAttribute("href", productUrl);
 
-    return () => {
-      document.title = prevTitle;
-    };
   }, [product]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -481,7 +478,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       else next[groupName] = value;
       return next;
     });
-  const selectedVariant =
+  const colorSizeVariant =
     Array.isArray(product.variants) && product.variants.length
       ? product.variants.find((variant) => {
           const variantColor = String(
@@ -515,6 +512,15 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           );
         }) || null
       : null;
+  // Resolve custom variant types (e.g. Type: 2 legs) the same way the
+  // add-to-cart flow does. Color and size are optional; custom attributes
+  // alone are enough to select a priced variant row.
+  const selectedVariant =
+    Object.keys(selectedAttributes).length > 0
+      ? resolveVariantByAttrs(product, fullSelection) ||
+        resolveVariantByAttrs(product, selectedAttributes) ||
+        colorSizeVariant
+      : colorSizeVariant;
   const { price, compareAtPrice, discountPct } = selectedVariant
     ? getDisplayPrice(product, selectedVariant)
     : {
@@ -862,17 +868,19 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                         >
                           {isSelected && (
                             <span className="absolute inset-0 flex items-center justify-center">
-                              <svg
-                                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white drop-shadow-md"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
+                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/95 shadow-sm ring-1 ring-black/10">
+                                <svg
+                                  className="h-3 w-3 text-gray-900 sm:h-3.5 sm:w-3.5"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </span>
                             </span>
                           )}
                         </span>

@@ -14,6 +14,8 @@ export default function PopupManager() {
   const [image, setImage] = useState({ url: "", public_id: "" });
   const [link, setLink] = useState("/");
   const [isActive, setIsActive] = useState(true);
+  const [delaySeconds, setDelaySeconds] = useState("3");
+  const [durationSeconds, setDurationSeconds] = useState("6");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,8 @@ export default function PopupManager() {
           setImage(p.image || { url: "", public_id: "" });
           setLink(p.link || "/");
           setIsActive(p.isActive !== false);
+          setDelaySeconds(String(p.delaySeconds ?? 3));
+          setDurationSeconds(String(p.durationSeconds ?? 6));
         }
       })
       .catch(console.error)
@@ -73,13 +77,23 @@ export default function PopupManager() {
       alert("Please upload a popup image first.");
       return;
     }
+    const delay = Number(delaySeconds);
+    const duration = Number(durationSeconds);
+    if (!Number.isInteger(delay) || delay < 0 || delay > 300) {
+      alert("Popup delay must be a whole number from 0 to 300 seconds.");
+      return;
+    }
+    if (!Number.isInteger(duration) || duration < 1 || duration > 300) {
+      alert("Popup display duration must be a whole number from 1 to 300 seconds.");
+      return;
+    }
     setSaving(true);
     try {
       const resp = await fetch(`${API}/api/admin/popup`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ image, link, isActive }),
+        body: JSON.stringify({ image, link, isActive, delaySeconds: delay, durationSeconds: duration }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Failed");
@@ -121,9 +135,43 @@ export default function PopupManager() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#1F2937] work-sans">Popup Banner</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Shown to visitors after 3 seconds. Auto-closes after 6 seconds if not
-          dismissed.
+          Appears after {delaySeconds || 0} seconds and stays visible for {durationSeconds || 0} seconds unless dismissed.
         </p>
+      </div>
+
+      {/* Popup timing */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="popup-delay" className="mb-1 block text-sm font-semibold text-gray-700">
+            Delay before showing (seconds)
+          </label>
+          <input
+            id="popup-delay"
+            type="number"
+            min="0"
+            max="300"
+            step="1"
+            value={delaySeconds}
+            onChange={(e) => setDelaySeconds(e.target.value)}
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+        </div>
+        <div>
+          <label htmlFor="popup-duration" className="mb-1 block text-sm font-semibold text-gray-700">
+            Stay visible for (seconds)
+          </label>
+          <input
+            id="popup-duration"
+            type="number"
+            min="1"
+            max="300"
+            step="1"
+            value={durationSeconds}
+            onChange={(e) => setDurationSeconds(e.target.value)}
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+        </div>
+        <p className="text-xs text-gray-400 sm:col-span-2">Use whole seconds. Delay: 0–300; visible duration: 1–300. Changes apply after saving.</p>
       </div>
 
       {/* Image upload */}

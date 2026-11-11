@@ -499,7 +499,7 @@ export default function ProductVariantBuilder({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[22rem_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-5 2xl:grid-cols-[22rem_minmax(0,1fr)]">
         <div className="space-y-4">
           <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
             <label className={labelClass}>Need another type?</label>
@@ -540,7 +540,7 @@ export default function ProductVariantBuilder({
                       className="h-4 w-4 shrink-0"
                     />
                     {editingGroup === group.name ? (
-                      <span className="flex items-center gap-1 flex-1">
+                      <span className="flex min-w-0 flex-1 items-center gap-1">
                         <input
                           autoFocus
                           value={editingName}
@@ -550,7 +550,7 @@ export default function ProductVariantBuilder({
                               renameVariation(group.name, editingName);
                             if (e.key === "Escape") setEditingGroup(null);
                           }}
-                          className="flex-1 rounded-lg border border-gray-300 px-2 py-0.5 text-sm font-semibold"
+                          className="min-w-0 flex-1 rounded-lg border border-gray-300 px-2 py-0.5 text-sm font-semibold"
                         />
                         <button
                           type="button"

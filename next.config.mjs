@@ -6,7 +6,10 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
-  // output: "export",
+  // Static export is a production deployment format. Keeping dev in normal
+  // server mode allows dashboard dynamic routes to resolve live IDs that
+  // cannot be known by generateStaticParams() at build time.
+  ...(process.env.NODE_ENV === "production" ? { output: "export" } : {}),
   trailingSlash: true,
 
   // Disable React StrictMode's dev-only double mount/effect invocation. It made

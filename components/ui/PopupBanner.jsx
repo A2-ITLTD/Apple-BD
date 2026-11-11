@@ -37,11 +37,13 @@ export default function PopupBanner() {
   useEffect(() => {
     if (!popup) return;
 
-    // Show after 3 seconds
-    const showTimer = setTimeout(() => setVisible(true), 3000);
-
-    // Auto-close after 3 + 6 = 9 seconds
-    const closeTimer = setTimeout(() => handleClose(), 9000);
+    const delayMs = Math.max(0, Number(popup.delaySeconds ?? 3)) * 1000;
+    const durationMs = Math.max(1, Number(popup.durationSeconds ?? 6)) * 1000;
+    const showTimer = setTimeout(() => setVisible(true), delayMs);
+    const closeTimer = setTimeout(
+      () => handleClose(),
+      delayMs + durationMs,
+    );
 
     return () => {
       clearTimeout(showTimer);

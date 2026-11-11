@@ -73,7 +73,7 @@ export default function AdminLogin() {
             <img
               src={logoUrl}
               alt={storeName || "Store"}
-              className="h-14 w-24 shadow-xl"
+              className="h-14 w-auto max-w-32 shrink-0 object-contain shadow-xl"
             />
           ) : (
             <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1D1D1F] text-lg font-bold text-white shadow-sm">

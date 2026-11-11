@@ -47,25 +47,31 @@ export function StoreSettingsProvider({ children }) {
   });
 
   useEffect(() => {
-    fetch(`${API}/api/admin/top-banner`)
-      .then((r) => r.json())
-      .then((d) =>
-        setSettings({
-          storeName: d.storeName || "",
-          logoUrl: d.websiteLogo?.url || "",
-          footerLogoUrl: d.footerLogo?.url || "",
-          faviconUrl: d.websiteFavicon?.url || "",
-          footerInfo: d.footerInfo || { phone: "", email: "", address: "" },
-          contactInfo: d.contactInfo || { phone: "", email: "", address: "" },
-          socialLinks: d.socialLinks || {},
-          policyContent: d.policyContent || EMPTY_POLICY,
-          footerLinks: d.footerLinks || EMPTY_FOOTER_LINKS,
-          footerColumns: Array.isArray(d.footerColumns) ? d.footerColumns : [],
-          footerBrand: d.footerBrand || {},
-          aboutContent: d.aboutContent || EMPTY_ABOUT,
-        }),
-      )
-      .catch(() => {});
+    const refreshSettings = () =>
+      fetch(`${API}/api/admin/top-banner`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) =>
+          setSettings({
+            storeName: d.storeName || "",
+            logoUrl: d.websiteLogo?.url || "",
+            footerLogoUrl: d.footerLogo?.url || "",
+            faviconUrl: d.websiteFavicon?.url || "",
+            footerInfo: d.footerInfo || { phone: "", email: "", address: "" },
+            contactInfo: d.contactInfo || { phone: "", email: "", address: "" },
+            socialLinks: d.socialLinks || {},
+            policyContent: d.policyContent || EMPTY_POLICY,
+            footerLinks: d.footerLinks || EMPTY_FOOTER_LINKS,
+            footerColumns: Array.isArray(d.footerColumns) ? d.footerColumns : [],
+            footerBrand: d.footerBrand || {},
+            aboutContent: d.aboutContent || EMPTY_ABOUT,
+          }),
+        )
+        .catch(() => {});
+
+    refreshSettings();
+    window.addEventListener("store-settings-updated", refreshSettings);
+    return () =>
+      window.removeEventListener("store-settings-updated", refreshSettings);
   }, []);
 
   return (

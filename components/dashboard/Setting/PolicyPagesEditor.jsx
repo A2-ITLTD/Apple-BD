@@ -1151,6 +1151,7 @@ export default function PolicyPagesEditor() {
         body: JSON.stringify(payload),
       });
       if (!resp.ok) throw new Error((await resp.json()).error || "Save failed");
+      window.dispatchEvent(new Event("store-settings-updated"));
       showToast("✅ Saved!");
     } catch (err) {
       alert(err.message || "There was a problem saving");
@@ -1172,6 +1173,7 @@ export default function PolicyPagesEditor() {
         const body = await resp.json().catch(() => ({}));
         throw new Error(body.error || "Save failed");
       }
+      window.dispatchEvent(new Event("store-settings-updated"));
       setStatus("saved");
       setTimeout(() => setStatus(""), 2500);
     } catch (err) {

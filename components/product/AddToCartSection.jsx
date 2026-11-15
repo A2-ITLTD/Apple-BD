@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import QuantitySelector from "@/components/ui/QuantitySelector";
 import WishlistButton from "@/components/product/WishlistButton";
 import { useCart } from "@/components/context/CartContext";
+import { startBuyNowCheckout } from "@/lib/buyNowCheckout";
 import {
   resolveVariantPrice,
   resolveVariant,
@@ -142,15 +143,12 @@ export default function AddToCartSection({
 
   const handleBuyNow = () => {
     if (!requireVariant()) return;
-    flyProductImage();
-    addToCart(product, qty, {
+    startBuyNowCheckout(product, qty, {
       selectedColor: effectiveColor,
       selectedSize: selectedSize || null,
       selectedAttributes: hasSelectedAttrs ? selectedAttributes : null,
       selectedVariant,
-      silent: true,
-    });
-    router.push("/checkout");
+    }, router);
   };
 
   return (

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaStar, FaShoppingCart, FaBolt } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
+import { startBuyNowCheckout } from "@/lib/buyNowCheckout";
 import { promptForVariant } from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";
 import { getVariantColors } from "@/components/cart/VariantEditModal";
@@ -228,8 +229,7 @@ export default function FeaturedShowcase() {
         <button
           onClick={() => {
             if (promptForVariant(active, router)) return;
-            addToCart(active, active.showcaseQty || 1, { silent: true });
-            router.push("/checkout");
+            startBuyNowCheckout(active, active.showcaseQty || 1, {}, router);
           }}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1D1D1F] text-white px-6 py-3 text-sm font-bold shadow-[0_10px_30px_-8px_rgba(29,29,31,0.5)] hover:bg-black active:scale-[0.98] transition-all"
         >
@@ -462,8 +462,7 @@ export default function FeaturedShowcase() {
                   <button
                     onClick={() => {
                       if (promptForVariant(active, router)) return;
-                      addToCart(active, active.showcaseQty || 1, { silent: true });
-                      router.push("/checkout");
+                      startBuyNowCheckout(active, active.showcaseQty || 1, {}, router);
                     }}
                     className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#1D1D1F] text-white py-1.5 text-[11px] font-bold shadow-sm hover:bg-black active:scale-[0.98] transition-all"
                   >

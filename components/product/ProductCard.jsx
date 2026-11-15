@@ -12,6 +12,7 @@ import {
   FaBalanceScale,
 } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
+import { startBuyNowCheckout } from "@/lib/buyNowCheckout";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
@@ -452,12 +453,7 @@ export default function ProductCard({
                 onClick={(e) => {
                   e.stopPropagation();
                   if (!ensureCardVariantSelected()) return;
-                  flyToCart(imageRef.current, mainImage);
-                  addToCart(product, 1, {
-                    ...resolveAddSelection(),
-                    silent: true,
-                  });
-                  router.push("/checkout");
+                  startBuyNowCheckout(product, 1, resolveAddSelection(), router);
                 }}
                 className="flex-1 bg-white border border-gray-300 text-[#1D1D1F] py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold hover:bg-gray-50 hover:border-gray-400 active:scale-[0.98] transition-all cursor-pointer"
               >

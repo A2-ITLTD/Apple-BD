@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -26,12 +26,19 @@ import { toast } from "react-hot-toast";
 import { useLanguage } from "@/components/context/LanguageContext";
 import OrderItemVariantEditor from "@/components/order/OrderItemVariantEditor";
 import { getMissingVariantSelections } from "@/components/cart/VariantEditModal";
+import { BUY_NOW_STORAGE_KEY } from "@/lib/buyNowCheckout";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const { cartItems, clearCart, cartHydrated, updateCartVariant, updateQty } =
     useCart();
+  const [buyNowItem, setBuyNowItem] = useState(null);
+  const [buyNowMode, setBuyNowMode] = useState(false);
+  const checkoutItems = useMemo(
+    () => (buyNowMode ? (buyNowItem ? [buyNowItem] : []) : cartItems),
+    [buyNowMode, buyNowItem, cartItems],
+  );
   const { user } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showRewardsModal, setShowRewardsModal] = useState(false);
@@ -58,6 +65,7 @@ export default function CheckoutPage() {
     pointsPerTk: 100,
   });
   const [quoteLoading, setQuoteLoading] = useState(false);
+  const quoteRequestVersion = useRef(0);
   const [useRewardPoints, setUseRewardPoints] = useState(false);
   const pointsToRedeemRef = useRef(0);
   const [appliedCoupons, setAppliedCoupons] = useState([]); // array of coupon codes
@@ -66,6 +74,18 @@ export default function CheckoutPage() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const orderPlaced = useRef(false);
   const [previousAddresses, setPreviousAddresses] = useState([]);
+
+  useEffect(() => {
+    const isBuyNow = new URLSearchParams(window.location.search).get("buyNow") === "1";
+    if (!isBuyNow) return;
+    // Buy Now is loaded from sessionStorage after hydration to keep SSR markup stable.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBuyNowMode(true);
+    try {
+      const stored = sessionStorage.getItem(BUY_NOW_STORAGE_KEY);
+      if (stored) setBuyNowItem(JSON.parse(stored));
+    } catch {}
+  }, []);
 
   // Progress indicators state
   const [progressItems, setProgressItems] = useState([]);
@@ -117,14 +137,16 @@ export default function CheckoutPage() {
   const sessionPatchTimer = useRef(null);
 
   useEffect(() => {
-    if (cartItems.length === 0) return;
+    if (new URLSearchParams(window.location.search).get("buyNow") === "1" && !buyNowItem) return;
+    if (buyNowMode && !buyNowItem) return;
+    if (checkoutItems.length === 0) return;
     const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
     fetch(`${API}/api/checkout-sessions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
-        items: cartItems.map((item) => {
+        items: checkoutItems.map((item) => {
           const img = item.product?.images?.[0];
           return {
             productId: item.product?._id || item.product?.id || "",
@@ -145,7 +167,7 @@ export default function CheckoutPage() {
         if (data?.sessionId) checkoutSessionId.current = data.sessionId;
       })
       .catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [checkoutItems, buyNowMode, buyNowItem]);
 
   // Debounced update: as guest fills name/phone/email, patch the session so
   // abandoned checkout records show real contact info even for guest users.
@@ -194,7 +216,14 @@ export default function CheckoutPage() {
   // Redirect if cart is empty — but NOT before hydration or after a successful order
   useEffect(() => {
     if (!cartHydrated) return;
-    const hasIncompleteVariant = cartItems.some((item) =>
+    // The Buy Now item is read from sessionStorage in the preceding effect.
+    // Don't let the initial empty-cart render redirect before that state loads.
+    if (
+      new URLSearchParams(window.location.search).get("buyNow") === "1" &&
+      !buyNowItem
+    ) return;
+    if (buyNowMode && !buyNowItem) return;
+    const hasIncompleteVariant = checkoutItems.some((item) =>
       getMissingVariantSelections(item.product, {
         selectedColor: item.selectedColor,
         selectedSize: item.selectedSize,
@@ -206,10 +235,10 @@ export default function CheckoutPage() {
       router.push("/cart");
       return;
     }
-    if (cartItems.length === 0 && !orderPlaced.current) {
+    if (checkoutItems.length === 0 && !orderPlaced.current) {
       router.push("/");
     }
-  }, [cartItems, cartHydrated, router]);
+  }, [checkoutItems, cartHydrated, router, buyNowMode, buyNowItem]);
 
   // ── Server quote ────────────────────────────────────────────────────────────
   // Re-fetch whenever cartItems OR city/zone/area changes (keep any active coupons via ref)
@@ -219,7 +248,7 @@ export default function CheckoutPage() {
 
   const fetchQuote = useCallback(
     (couponCodes, pointsToRedeem = 0) => {
-      if (!cartItems.length) return;
+      if (!checkoutItems.length) return;
       const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
       const city = currentCityRef.current?.trim() || null;
       const zone = currentZoneRef.current?.trim() || null;
@@ -229,7 +258,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          items: cartItems.map((item) => ({
+          items: checkoutItems.map((item) => ({
             productId: item.product._id || item.product.id,
             quantity: item.quantity,
             color: item.selectedColor || null,
@@ -244,7 +273,7 @@ export default function CheckoutPage() {
         }),
       }).then((r) => r.json());
     },
-    [cartItems],
+    [checkoutItems],
   );
 
   // Fetch progress indicators
@@ -312,17 +341,30 @@ export default function CheckoutPage() {
   }, [user]);
 
   useEffect(() => {
-    if (!cartItems.length) return;
+    if (!checkoutItems.length) return;
+    const requestVersion = ++quoteRequestVersion.current;
+    // Never keep the old cart's totals visible while the Buy Now quote loads.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setQuote({
+      items: [], subtotal: 0, baseShipping: 0, shipping: 0, autoDiscount: 0,
+      couponDiscount: 0, discount: 0, total: 0, freeShippingFromCoupon: false,
+      appliedCouponCode: null, couponHeadline: null, appliedCoupons: [],
+      couponErrors: [], insideDhaka: null, rewardPointsEarned: 0,
+      availablePoints: 0, pointsRedeemed: 0, pointsDiscount: 0, pointsPerTk: 100,
+    });
     const currentCoupons = appliedCouponsRef.current;
     setQuoteLoading(true);
     fetchQuote(currentCoupons, pointsToRedeemRef.current)
       .then((data) => {
+        if (requestVersion !== quoteRequestVersion.current) return;
         if (data.error && currentCoupons?.length) {
           appliedCouponsRef.current = [];
           setAppliedCoupons([]);
           setCouponMsg({ type: "error", text: data.error });
           setFormData((prev) => ({ ...prev, coupon: "" }));
-          return fetchQuote(null, pointsToRedeemRef.current).then(setQuote);
+          return fetchQuote(null, pointsToRedeemRef.current).then((freshQuote) => {
+            if (requestVersion === quoteRequestVersion.current) setQuote(freshQuote);
+          });
         }
         setQuote(data);
         if (data.appliedCoupons?.length) {
@@ -333,9 +375,11 @@ export default function CheckoutPage() {
         fetchProgress(data.subtotal || 0);
       })
       .catch((err) => console.error("Quote fetch failed:", err))
-      .finally(() => setQuoteLoading(false));
+      .finally(() => {
+        if (requestVersion === quoteRequestVersion.current) setQuoteLoading(false);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cartItems]);
+  }, [checkoutItems]);
 
   // Re-fetch when city/zone/area selection changes so shipping reflects
   // inside/outside Dhaka, and any zone/area-specific override
@@ -352,7 +396,7 @@ export default function CheckoutPage() {
     currentCityRef.current = resolvedCity;
     currentZoneRef.current = resolvedZone || "";
     currentAreaRef.current = resolvedArea || "";
-    if (!cartItems.length) return;
+    if (!checkoutItems.length) return;
     setQuoteLoading(true);
     fetchQuote(appliedCouponsRef.current, pointsToRedeemRef.current)
       .then((data) => {
@@ -499,7 +543,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          items: cartItems.map((item) => ({
+          items: checkoutItems.map((item) => ({
             productId: item.product._id || item.product.id,
             quantity: item.quantity,
             color: item.selectedColor || null,
@@ -562,7 +606,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          items: cartItems.map((item) => ({
+          items: checkoutItems.map((item) => ({
             productId: item.product._id || item.product.id,
             quantity: item.quantity,
             color: item.selectedColor || null,
@@ -600,7 +644,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          items: cartItems.map((item) => ({
+          items: checkoutItems.map((item) => ({
             productId: item.product._id || item.product.id,
             quantity: item.quantity,
             color: item.selectedColor || null,
@@ -678,7 +722,7 @@ export default function CheckoutPage() {
       userEmail: user?.email || formData.email,
       // Only product IDs, quantities, and variant selectors — NO prices, totals, or other
       // financial figures. The server re-fetches and recalculates everything.
-      items: cartItems.map((item) => ({
+      items: checkoutItems.map((item) => ({
         productId: item.product._id || item.product.id,
         quantity: item.quantity,
         color: item.selectedColor || null,
@@ -723,7 +767,7 @@ export default function CheckoutPage() {
       if (result.method === "cod") {
         // Cash on Delivery — set flag BEFORE clearing cart to suppress redirect
         orderPlaced.current = true;
-        clearCart();
+        if (!buyNowMode) clearCart();
         // Prefer the clean, human-friendly order number (e.g. apl-1675) in the
         // confirmation URL; fall back to the raw id if it's ever missing.
         router.push(
@@ -732,7 +776,7 @@ export default function CheckoutPage() {
       } else if (["bkash", "nagad", "rocket"].includes(result.method)) {
         // Mobile banking — redirect to payment page with merchant info
         orderPlaced.current = true;
-        clearCart();
+        if (!buyNowMode) clearCart();
         const params = new URLSearchParams({
           orderId: result.orderId,
           method: result.method,
@@ -760,7 +804,7 @@ export default function CheckoutPage() {
     setShowRewardsModal(true);
   };
 
-  if (cartItems.length === 0) {
+  if (checkoutItems.length === 0) {
     return null;
   }
 
@@ -1028,7 +1072,7 @@ export default function CheckoutPage() {
 
               {/* Order items — compact list */}
               <div className="relative mb-3 pb-3 sm:mb-4 sm:pb-4 border-b border-gray-100">
-                {cartItems.length > 2 && (
+                {checkoutItems.length > 2 && (
                   <div className="absolute right-0 top-0 bottom-4 w-1 rounded-full bg-gray-300 overflow-hidden">
                     <div
                       className="absolute left-0 right-0 top-0 rounded-full bg-gray-400 transition-all duration-100"
@@ -1044,7 +1088,7 @@ export default function CheckoutPage() {
                   onScroll={handleItemsScroll}
                   className="space-y-2.5 sm:space-y-3 overflow-y-auto no-scrollbar pr-2 max-h-20 md:max-h-25"
                 >
-                  {cartItems.map((item) => {
+                  {checkoutItems.map((item) => {
                     const {
                       product,
                       quantity,
@@ -1247,7 +1291,7 @@ export default function CheckoutPage() {
                 {/* Savings line */}
                 {(() => {
                   // Use shared cart utilities — same logic as CartSidebar
-                  const mrpSavings = cartItems.reduce((sum, item) => {
+                  const mrpSavings = checkoutItems.reduce((sum, item) => {
                     const {
                       quantity,
                       selectedColor,

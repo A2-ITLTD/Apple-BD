@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/context/CartContext";
+import { startBuyNowCheckout } from "@/lib/buyNowCheckout";
 import { promptForVariant } from "@/components/cart/VariantEditModal";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModal";
@@ -348,8 +349,7 @@ export default function DealsOfDay() {
                       onClick={() => {
                         if (mainProduct) {
                           if (promptForVariant(mainProduct, router)) return;
-                          addToCart(mainProduct, 1, { silent: true });
-                          router.push("/checkout");
+                          startBuyNowCheckout(mainProduct, 1, {}, router);
                         }
                       }}
                       className="flex-1 bg-[#1D1D1F] text-white py-2.5 md:py-3 rounded-xl text-xs md:text-base font-semibold shadow-sm hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/40 focus-visible:ring-offset-2 transition"

@@ -19,6 +19,7 @@ import {
   getVariantColors,
   getColorImageMap,
   resolveVariant,
+  promptForVariant,
 } from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";
 import { useCompare } from "@/components/context/CompareContext";
@@ -174,13 +175,15 @@ export default function ProductCard({
   // When the product has color variants but the shopper adds to cart without
   // picking one, default to the first color (matching the swatch order). If the
   // product has no colors at all, leave the selection empty as before.
-  const firstColorName = getVariantColors(product)[0]?.name || null;
   const resolveAddSelection = () => {
-    const color = selectedColor || firstColorName;
+    const color = selectedColor;
     return {
       selectedColor: color,
       selectedVariant: color ? resolveVariant(product, color, null) : null,
     };
+  };
+  const ensureCardVariantSelected = () => {
+    return !promptForVariant(product, router, resolveAddSelection());
   };
 
   return (
@@ -448,6 +451,7 @@ export default function ProductCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (!ensureCardVariantSelected()) return;
                   flyToCart(imageRef.current, mainImage);
                   addToCart(product, 1, {
                     ...resolveAddSelection(),
@@ -463,6 +467,7 @@ export default function ProductCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (!ensureCardVariantSelected()) return;
                   flyToCart(imageRef.current, mainImage);
                   addToCart(product, 1, resolveAddSelection());
                 }}

@@ -291,6 +291,61 @@ export const CartProvider = ({ children }) => {
           },
         ];
       });
+
+      if (typeof window !== "undefined") {
+        const itemId = String(id || "");
+        const itemName = product?.title || product?.name || "Product";
+        const variantPrice = Number(selectedVariant?.price);
+        const unitPrice =
+          variantPrice > 0 ? variantPrice : Number(product?.price || 0);
+        const value = unitPrice * qty;
+
+        // Keep the GA4/GTM event name independent of the button's display text.
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ ecommerce: null });
+        window.dataLayer.push({
+          event: "add_to_cart",
+          ecommerce: {
+            currency: "BDT",
+            value,
+            items: [
+              {
+                item_id: itemId,
+                item_name: itemName,
+                item_variant: [selectedColor, selectedSize]
+                  .filter(Boolean)
+                  .join(" / "),
+                price: unitPrice,
+                quantity: qty,
+              },
+            ],
+          },
+        });
+
+        const metaData = {
+          content_ids: [itemId],
+          content_name: itemName,
+          content_type: "product",
+          contents: [{ id: itemId, quantity: qty, item_price: unitPrice }],
+          value,
+          currency: "BDT",
+        };
+        if (typeof window.fbq === "function") {
+          window.fbq("track", "AddToCart", metaData);
+        }
+        if (typeof window.ttq?.track === "function") {
+          window.ttq.track("AddToCart", {
+            content_id: itemId,
+            content_type: "product",
+            content_name: itemName,
+            quantity: qty,
+            price: unitPrice,
+            value,
+            currency: "BDT",
+          });
+        }
+      }
+
       if (!silent) {
         showActionToast({
           message:

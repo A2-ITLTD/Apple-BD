@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaStar, FaShoppingCart, FaBolt } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
+import { promptForVariant } from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";
 import { getVariantColors } from "@/components/cart/VariantEditModal";
 
@@ -226,6 +227,7 @@ export default function FeaturedShowcase() {
         {/* Buy Now — straight to checkout (adds the admin-defined quantity) */}
         <button
           onClick={() => {
+            if (promptForVariant(active, router)) return;
             addToCart(active, active.showcaseQty || 1, { silent: true });
             router.push("/checkout");
           }}
@@ -236,7 +238,10 @@ export default function FeaturedShowcase() {
         </button>
         {/* Add to Cart — adds the admin-defined quantity */}
         <button
-          onClick={() => addToCart(active, active.showcaseQty || 1)}
+          onClick={() => {
+            if (promptForVariant(active, router)) return;
+            addToCart(active, active.showcaseQty || 1);
+          }}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-white/60 border border-[#1D1D1F]/15 text-[#1D1D1F] px-6 py-3 text-sm font-bold hover:bg-white/80 active:scale-[0.98] transition-all"
         >
           <FaShoppingCart className="w-4 h-4" />
@@ -456,6 +461,7 @@ export default function FeaturedShowcase() {
                 <div className="mt-1.5 grid grid-cols-2 gap-1.5">
                   <button
                     onClick={() => {
+                      if (promptForVariant(active, router)) return;
                       addToCart(active, active.showcaseQty || 1, { silent: true });
                       router.push("/checkout");
                     }}
@@ -464,7 +470,10 @@ export default function FeaturedShowcase() {
                     <FaBolt className="w-3 h-3" /> Buy Now
                   </button>
                   <button
-                    onClick={() => addToCart(active, active.showcaseQty || 1)}
+                    onClick={() => {
+                      if (promptForVariant(active, router)) return;
+                      addToCart(active, active.showcaseQty || 1);
+                    }}
                     className="inline-flex items-center justify-center gap-1 rounded-full bg-white border border-[#1D1D1F]/15 text-[#1D1D1F] py-1.5 text-[10px] font-bold whitespace-nowrap hover:bg-[#1D1D1F]/5 active:scale-[0.98] transition-all"
                   >
                     <FaShoppingCart className="w-2.5 h-2.5" /> Add to Cart

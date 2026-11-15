@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { FaTimes, FaPlus } from "react-icons/fa";
+import toast from "react-hot-toast";
 import { useCart } from "@/components/context/CartContext";
 
 // Build a { [colorNameLowercased]: imageUrl } map from any variants that have
@@ -254,6 +255,38 @@ export function getVariantExtraGroups(product) {
     });
   }
   return order.map((name) => ({ name, options: byName.get(name).options }));
+}
+
+// Return every variant dimension the shopper still needs to choose. This is
+// shared by product cards, product details, and cart/checkout validation.
+export function getMissingVariantSelections(product, selection = {}) {
+  const rows = product?.variants || [];
+  if (!rows.length) return [];
+
+  const availableGroups = new Set();
+  for (const variant of rows) {
+    Object.keys(variantAttrMap(variant)).forEach((group) =>
+      availableGroups.add(group.toLowerCase()),
+    );
+  }
+
+  const selected = {
+    ...(selection.selectedColor ? { Color: selection.selectedColor } : {}),
+    ...(selection.selectedSize ? { Size: selection.selectedSize } : {}),
+    ...(selection.selectedAttributes || {}),
+  };
+  return [...availableGroups].filter((group) => {
+    const key = Object.keys(selected).find((name) => name.toLowerCase() === group);
+    return !key || !String(selected[key] ?? "").trim();
+  });
+}
+
+export function promptForVariant(product, router, selection = {}) {
+  if (!getMissingVariantSelections(product, selection).length) return false;
+  toast.error("Please choose a variant");
+  const productId = product?._id || product?.id;
+  if (productId) router.push(`/product/${productId}/`);
+  return true;
 }
 
 // True when at least one variant combines 2+ groups (e.g. Color + Type).

@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 import VariantEditModal, {
   getVariantColors,
   getVariantSizes,
+  getMissingVariantSelections,
 } from "@/components/cart/VariantEditModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import { useLanguage } from "@/components/context/LanguageContext";
@@ -385,13 +386,27 @@ export default function CartSidebar() {
               </button>
               <button
                 onClick={() => {
+                  if (
+                    cartItems.some((item) =>
+                      getMissingVariantSelections(item.product, {
+                        selectedColor: item.selectedColor,
+                        selectedSize: item.selectedSize,
+                        selectedAttributes: item.selectedAttributes,
+                      }).length,
+                    )
+                  ) {
+                    toast.error("Please choose a variant");
+                    return;
+                  }
                   toggleSidebar();
                   router.push("/checkout");
                 }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-[#1D1D1F] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-black transition"
+                className="relative flex-1 flex items-center justify-center bg-[#1D1D1F] text-white text-sm font-semibold py-2.5 pl-3 pr-8 rounded-xl hover:bg-black transition"
               >
-                {t("cart.proceed_checkout")}
-                <FiArrowRight className="w-3.5 h-3.5" />
+                <span className="text-center leading-5">
+                  {t("cart.proceed_checkout")}
+                </span>
+                <FiArrowRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 shrink-0" />
               </button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FaEye, FaShoppingCart, FaHeart, FaBell } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
+import { promptForVariant } from "@/components/cart/VariantEditModal";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModal";
 import Skeleton from "@/components/ui/Skeleton";
@@ -484,6 +485,7 @@ export default function PopularPicks() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  if (promptForVariant(product, router)) return;
                                   addToCart(product, 1);
                                 }}
                                 className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-[#1D1D1F] hover:text-white transition-colors"
@@ -634,7 +636,8 @@ export default function PopularPicks() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                addToCart(product, 1);
+                                  if (promptForVariant(product, router)) return;
+                                  addToCart(product, 1);
                               }}
                               className="absolute bottom-4 left-4 right-4 bg-[#1D1D1F] text-white py-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black"
                             >

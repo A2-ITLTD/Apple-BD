@@ -8,6 +8,9 @@ const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
 const INPUT =
   "w-full border border-gray-200 px-3 py-2 rounded-xl text-sm outline-none transition focus:ring-2 focus:ring-[#1D1D1F] focus:border-[#1D1D1F]";
 
+const normalizeZoneName = (zone) =>
+  String(zone || "").replace(/ corporat$/i, " Corporation");
+
 function Section({ title, desc, children }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -35,7 +38,7 @@ export default function DeliveryChargeManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dhakaZones, setDhakaZones] = useState([]); // [{ zone, areas: [] }]
-  const [insideDhaka, setInsideDhaka] = useState(70);
+  const [insideDhaka, setInsideDhaka] = useState(80);
   const [outsideDhaka, setOutsideDhaka] = useState(130);
   // zoneCharges[zoneName] = "" | number-as-string
   const [zoneCharges, setZoneCharges] = useState({});
@@ -54,17 +57,18 @@ export default function DeliveryChargeManager() {
         setDhakaZones(locJson.zones || []);
 
         const dc = settingsJson.settings?.deliveryCharge || {};
-        setInsideDhaka(dc.insideDhaka ?? 70);
+        setInsideDhaka(dc.insideDhaka ?? 80);
         setOutsideDhaka(dc.outsideDhaka ?? 130);
 
         const zc = {};
         const ac = {};
         (dc.zones || []).forEach((z) => {
-          if (z.charge != null) zc[z.zone] = String(z.charge);
+          const zone = normalizeZoneName(z.zone);
+          if (z.charge != null) zc[zone] = String(z.charge);
           (z.areas || []).forEach((a) => {
             if (a.charge != null) {
-              ac[z.zone] = ac[z.zone] || {};
-              ac[z.zone][a.area] = String(a.charge);
+              ac[zone] = ac[zone] || {};
+              ac[zone][a.area] = String(a.charge);
             }
           });
         });

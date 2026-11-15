@@ -25,6 +25,7 @@ import SearchableSelect from "@/components/ui/SearchableSelect";
 import { toast } from "react-hot-toast";
 import { useLanguage } from "@/components/context/LanguageContext";
 import OrderItemVariantEditor from "@/components/order/OrderItemVariantEditor";
+import { getMissingVariantSelections } from "@/components/cart/VariantEditModal";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -193,10 +194,22 @@ export default function CheckoutPage() {
   // Redirect if cart is empty — but NOT before hydration or after a successful order
   useEffect(() => {
     if (!cartHydrated) return;
+    const hasIncompleteVariant = cartItems.some((item) =>
+      getMissingVariantSelections(item.product, {
+        selectedColor: item.selectedColor,
+        selectedSize: item.selectedSize,
+        selectedAttributes: item.selectedAttributes,
+      }).length,
+    );
+    if (hasIncompleteVariant) {
+      toast.error("Please choose a variant");
+      router.push("/cart");
+      return;
+    }
     if (cartItems.length === 0 && !orderPlaced.current) {
       router.push("/");
     }
-  }, [cartItems.length, cartHydrated, router]);
+  }, [cartItems, cartHydrated, router]);
 
   // ── Server quote ────────────────────────────────────────────────────────────
   // Re-fetch whenever cartItems OR city/zone/area changes (keep any active coupons via ref)

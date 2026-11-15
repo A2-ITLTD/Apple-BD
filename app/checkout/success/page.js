@@ -9,6 +9,7 @@ import { useLanguage } from "@/components/context/LanguageContext";
 import LocationSelect from "@/components/ui/LocationSelect";
 import { variantLabel } from "@/lib/variantLabel";
 import OrderItemVariantEditor from "@/components/order/OrderItemVariantEditor";
+import { trackPurchase } from "@/lib/trackPurchase";
 
 // Social icon components
 const WhatsApp = () => (
@@ -162,6 +163,7 @@ function SuccessContent() {
         const o = data.order || null;
         setOrder(o);
         if (o) {
+          trackPurchase(o);
           setEditBilling({
             name: o.billingDetails?.name || "",
             email: o.billingDetails?.email || "",

@@ -11,6 +11,7 @@ import {
   getVariantSizes,
   resolveVariantByAttrs,
   resolvePriceForSelection,
+  getMissingVariantSelections,
 } from "@/components/cart/VariantEditModal";
 import { FaBell, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,7 @@ export default function AddToCartSection({
     return !!localStorage.getItem(STORAGE_KEY(product._id));
   });
   const [notifyError, setNotifyError] = useState("");
+  const [variantError, setVariantError] = useState(false);
 
   const isPreorder = product.availability === "pre_order";
   const isOutOfStock =
@@ -84,9 +86,18 @@ export default function AddToCartSection({
   const hasVariants =
     allColors.length > 0 || allSizes.length > 0 || product.variants?.length > 0;
 
-  // When the product has colors but the shopper never picked one, default to
-  // the first color. Products with no colors keep an empty selection as before.
-  const effectiveColor = selectedColor || allColors[0]?.name || null;
+  const effectiveColor = selectedColor || null;
+  const missingVariants = getMissingVariantSelections(product, {
+    selectedColor: effectiveColor,
+    selectedSize,
+    selectedAttributes,
+  });
+
+  const requireVariant = () => {
+    if (!missingVariants.length) return true;
+    setVariantError(true);
+    return false;
+  };
 
   const effectivePrice = hasVariants
     ? resolvePriceForSelection(
@@ -119,6 +130,7 @@ export default function AddToCartSection({
   };
 
   const handleAdd = () => {
+    if (!requireVariant()) return;
     flyProductImage();
     addToCart(product, qty, {
       selectedColor: effectiveColor,
@@ -129,6 +141,7 @@ export default function AddToCartSection({
   };
 
   const handleBuyNow = () => {
+    if (!requireVariant()) return;
     flyProductImage();
     addToCart(product, qty, {
       selectedColor: effectiveColor,
@@ -142,6 +155,11 @@ export default function AddToCartSection({
 
   return (
     <div className="flex flex-col gap-4">
+      {variantError && missingVariants.length > 0 && (
+        <p role="alert" className="text-sm font-medium text-red-600">
+          Please choose a variant
+        </p>
+      )}
       {isPreorder ? (
         <>
           <div className="flex items-center gap-2 bg-[#E5F3FF] border border-gray-200 text-[#1D1D1F] px-4 py-2.5 rounded-xl text-sm font-medium w-fit">

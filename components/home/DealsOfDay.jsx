@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/context/CartContext";
+import { promptForVariant } from "@/components/cart/VariantEditModal";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
@@ -346,6 +347,7 @@ export default function DealsOfDay() {
                     <button
                       onClick={() => {
                         if (mainProduct) {
+                          if (promptForVariant(mainProduct, router)) return;
                           addToCart(mainProduct, 1, { silent: true });
                           router.push("/checkout");
                         }
@@ -379,7 +381,10 @@ export default function DealsOfDay() {
                   </button>
                   <button
                     onClick={() => {
-                      if (mainProduct) addToCart(mainProduct, 1);
+                      if (mainProduct) {
+                        if (promptForVariant(mainProduct, router)) return;
+                        addToCart(mainProduct, 1);
+                      }
                     }}
                     className="w-9 h-9 md:w-12 md:h-12 text-sm md:text-base shrink-0 border border-gray-300 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-[#1D1D1F] hover:text-[#1D1D1F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F]/40 focus-visible:ring-offset-2 transition"
                     title={t("home.add_to_cart")}

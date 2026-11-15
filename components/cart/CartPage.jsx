@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import VariantEditModal, {
   getVariantColors,
   getVariantSizes,
+  getMissingVariantSelections,
 } from "@/components/cart/VariantEditModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import { useLanguage } from "@/components/context/LanguageContext";
@@ -123,6 +124,18 @@ export default function CartPage({ embedded = false }) {
   }, []);
 
   const handleCheckout = () => {
+    if (
+      cartItems.some((item) =>
+        getMissingVariantSelections(item.product, {
+          selectedColor: item.selectedColor,
+          selectedSize: item.selectedSize,
+          selectedAttributes: item.selectedAttributes,
+        }).length,
+      )
+    ) {
+      toast.error("Please choose a variant");
+      return;
+    }
     router.push("/checkout");
   };
 
@@ -240,6 +253,11 @@ export default function CartPage({ embedded = false }) {
                 allColors.length > 0 ||
                 allSizes.length > 0 ||
                 product.variants?.length > 0;
+              const missingVariants = getMissingVariantSelections(product, {
+                selectedColor,
+                selectedSize,
+                selectedAttributes,
+              });
 
               // Find color hex for the selected color
               const selectedColorObj = selectedColor
@@ -293,6 +311,11 @@ export default function CartPage({ embedded = false }) {
                       </div>
 
                       {/* Variant chips */}
+                      {missingVariants.length > 0 && (
+                        <p role="alert" className="mt-2 text-xs font-medium text-red-600">
+                          Please choose a variant
+                        </p>
+                      )}
                       {selectedColor || selectedSize || attrEntries.length ? (
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                           {selectedColor && (

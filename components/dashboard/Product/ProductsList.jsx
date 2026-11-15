@@ -464,9 +464,9 @@ export default function ProductsList() {
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap">
                       {p.price
-                        ? `₹${p.price}`
+                        ? `৳${p.price}`
                         : p.variants?.[0]?.price
-                          ? `₹${p.variants[0].price}`
+                          ? `৳${p.variants[0].price}`
                           : "-"}
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap">

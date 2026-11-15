@@ -493,6 +493,18 @@ export default function CheckoutPage() {
     if (name === "area" && value !== "other") setCustomArea("");
   };
 
+  const handleCheckoutQuantityChange = (cartKey, quantity) => {
+    if (buyNowMode && buyNowItem) {
+      const updatedItem = { ...buyNowItem, quantity };
+      setBuyNowItem(updatedItem);
+      try {
+        sessionStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify(updatedItem));
+      } catch {}
+      return;
+    }
+    updateQty(cartKey, quantity);
+  };
+
   const applyPreviousAddress = (billing) => {
     setCustomCity("");
     setCustomZone("");
@@ -1164,7 +1176,10 @@ export default function CheckoutPage() {
                             <button
                               type="button"
                               onClick={() =>
-                                updateQty(cartKey, Math.max(1, quantity - 1))
+                                handleCheckoutQuantityChange(
+                                  cartKey,
+                                  Math.max(1, quantity - 1),
+                                )
                               }
                               disabled={quantity <= 1}
                               aria-label="Decrease quantity"
@@ -1177,7 +1192,9 @@ export default function CheckoutPage() {
                             </span>
                             <button
                               type="button"
-                              onClick={() => updateQty(cartKey, quantity + 1)}
+                              onClick={() =>
+                                handleCheckoutQuantityChange(cartKey, quantity + 1)
+                              }
                               aria-label="Increase quantity"
                               className="w-5.5 h-5.5 flex items-center justify-center text-[#6B7280] hover:text-[#1D1D1F] hover:bg-gray-100 transition"
                             >

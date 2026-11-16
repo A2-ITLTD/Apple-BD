@@ -216,9 +216,19 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const imgBoxRef = React.useRef(null);
   const thumbnailStripRef = React.useRef(null);
   const [thumbnailScroll, setThumbnailScroll] = useState({ left: false, right: false });
+  const [detailPoster, setDetailPoster] = useState(null);
   // touch swipe state for zoom modal
   const touchStartX = React.useRef(null);
   const currentImage = images[currentIndex] || "/assets/placeholder.svg";
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API}/api/product-detail-poster`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setDetailPoster(d.poster || null); })
+      .catch(() => { if (!cancelled) setDetailPoster(null); });
+    return () => { cancelled = true; };
+  }, []);
 
   const updateThumbnailScroll = React.useCallback(() => {
     const strip = thumbnailStripRef.current;
@@ -741,6 +751,19 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               </div>
             </div>
           </div>
+          {detailPoster?.image?.url && (
+            <div className="mt-4 w-full lg:max-w-[540px] lg:mx-auto overflow-hidden rounded-2xl">
+              {detailPoster.link ? (
+                <Link href={detailPoster.link} className="block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={detailPoster.image.url} alt="Store promotion" className="block h-auto w-full" />
+                </Link>
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={detailPoster.image.url} alt="Store promotion" className="block h-auto w-full" />
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── RIGHT: sticky buy box ── */}

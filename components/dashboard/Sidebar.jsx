@@ -312,6 +312,7 @@ const SECTIONS = [
       "/dashboard/featured-showcase",
       "/dashboard/banners",
       "/dashboard/promo-banner",
+      "/dashboard/product-detail-poster",
       "/dashboard/typographic-hero",
       "/dashboard/promo-panels",
       "/dashboard/discounts",
@@ -336,6 +337,13 @@ const SECTIONS = [
         label: "Promo Banner",
         href: "/dashboard/promo-banner",
         icon: "M4 5h16v10H4z M8 18h8",
+        permissionKey: "content.banners",
+      },
+      {
+        key: "product-detail-poster",
+        label: "Product Detail Poster",
+        href: "/dashboard/product-detail-poster",
+        icon: "M4 5h16v14H4z M8 9h8 M8 13h5",
         permissionKey: "content.banners",
       },
       {

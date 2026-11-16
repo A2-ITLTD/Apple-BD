@@ -616,7 +616,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         {/* ── LEFT: image gallery (wider, sticky) ── */}
         <div className="lg:col-span-6">
-          <div className="lg:sticky lg:top-24 flex flex-col-reverse gap-3">
+          <div
+            className={`${detailPoster?.image?.url ? "" : "lg:sticky lg:top-24"} flex flex-col-reverse gap-3`}
+          >
             {/* Horizontal thumbnail strip below the main image */}
             {images.length > 1 && (
               <div className="relative mx-auto min-w-0 w-full max-w-[540px] shrink-0">
@@ -752,15 +754,15 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             </div>
           </div>
           {detailPoster?.image?.url && (
-            <div className="mt-4 w-full lg:max-w-[540px] lg:mx-auto overflow-hidden rounded-2xl">
+            <div className="mt-1 h-[88px] w-full overflow-hidden rounded-xl sm:h-[100px] lg:mx-auto lg:max-w-[540px]">
               {detailPoster.link ? (
                 <Link href={detailPoster.link} className="block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={detailPoster.image.url} alt="Store promotion" className="block h-auto w-full" />
+                  <img src={detailPoster.image.url} alt="Store promotion" className="block h-full w-full object-cover" />
                 </Link>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={detailPoster.image.url} alt="Store promotion" className="block h-auto w-full" />
+                <img src={detailPoster.image.url} alt="Store promotion" className="block h-full w-full object-cover" />
               )}
             </div>
           )}

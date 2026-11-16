@@ -92,7 +92,13 @@ export default function ProductDetailPosterEditor() {
           <button type="button" onClick={() => setPickerOpen(true)} className="text-sm px-3 py-2 border rounded-lg hover:bg-gray-50">Media library</button>
           {cfg.image?.url && <button type="button" onClick={() => setCfg((p) => ({ ...p, image: { url: "", public_id: "" } }))} className="text-sm px-3 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50">Remove image</button>}
         </div>
-        <p className="text-xs text-gray-400 mt-2">The image keeps its original proportions and is stored in Cloudinary after upload. Removing it clears the saved poster reference.</p>
+        <p className="text-xs text-gray-400 mt-2">
+          Recommended artwork: <strong>1600 × 350 px (width × height)</strong>,
+          approximately 4.6:1. It displays at up to 540 × 100 px on desktop and
+          88 px high on mobile; edges may be cropped to fit, so keep important
+          text and logos near the center. Removing the image clears its saved
+          poster reference.
+        </p>
       </div>
 
       <div>

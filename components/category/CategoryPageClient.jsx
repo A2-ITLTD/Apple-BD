@@ -12,9 +12,13 @@ import { getDisplayPrice } from "@/lib/pricing";
 import AdSlot from "@/components/ui/AdSlot";
 import NoProductsFound from "@/components/ui/NoProductsFound";
 import PageBanner from "@/components/ui/PageBanner";
+import { fetchJsonWithRetry } from "@/lib/fetchJsonWithRetry";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
 const PRODUCTS_PER_PAGE = 20;
+const emptyFilters = () => ({
+  priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null,
+});
 
 export default function CategoryPageClient({ slug, parentSlug = null }) {
   const router = useRouter();
@@ -34,6 +38,8 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [categoryIdsParam, setCategoryIdsParam] = useState("");
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState("");
+  const [requestVersion, setRequestVersion] = useState(0);
   const [productsLoadedOnce, setProductsLoadedOnce] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   // Desktop filter sidebar — collapsed by default; grid gains an extra column
@@ -67,6 +73,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
     setSortOption("position");
     setCurrentPage(1);
     setTotalProducts(0);
+    setProducts([]);
     setCategoryIdsParam("");
     setActiveSubId(null);
     setShowMobileFilters(false);
@@ -248,9 +255,12 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
 
   useEffect(() => {
     if (!categoryIdsParam) return;
+    const controller = new AbortController();
+    let current = true;
 
     const loadProducts = async () => {
       setLoadingProducts(true);
+      setProductsError("");
       try {
         const params = new URLSearchParams();
         params.set("page", String(currentPage));
@@ -297,33 +307,38 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
           params.set("minRating", String(activeFilters.minRating));
         }
 
-        const response = await fetch(
+        const json = await fetchJsonWithRetry(
           `${API}/api/products?${params.toString()}`,
+          { signal: controller.signal },
         );
-        const json = await response.json();
-
-        if (!response.ok)
-          throw new Error(json.error || "Failed to load products");
 
         const items = (json.items || []).map((p) => ({
           ...p,
           price: getDisplayPrice(p).price,
         }));
 
-        setProducts(items);
-        setTotalProducts(Number(json.total || 0));
-        setProductsLoadedOnce(true);
+        if (current) {
+          setProducts(items);
+          setTotalProducts(Number(json.total || 0));
+          setProductsLoadedOnce(true);
+        }
       } catch (err) {
+        if (err.name === "AbortError" || !current) return;
         console.error(err);
         setProducts([]);
         setTotalProducts(0);
         setProductsLoadedOnce(true);
+        setProductsError(err.message || "Could not load products. Please try again.");
       } finally {
-        setLoadingProducts(false);
+        if (current) setLoadingProducts(false);
       }
     };
 
     loadProducts();
+    return () => {
+      current = false;
+      controller.abort();
+    };
   }, [
     categoryIdsParam,
     currentPage,
@@ -331,6 +346,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
     activeFilters,
     activeSubId,
     descendantMap,
+    requestVersion,
   ]);
 
   const { user } = useUser();
@@ -470,6 +486,11 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
                 type="button"
                 onClick={() => {
                   setActiveSubId(null);
+                  setActiveFilters(emptyFilters());
+                  setProducts([]);
+                  setTotalProducts(0);
+                  setLoadingProducts(true);
+                  setShowMobileFilters(false);
                   setCurrentPage(1);
                 }}
                 className={`shrink-0 h-9 px-4 inline-flex items-center rounded-full text-sm font-medium ${
@@ -486,6 +507,11 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
                     type="button"
                     onClick={() => {
                       setActiveSubId(sub._id);
+                      setActiveFilters(emptyFilters());
+                      setProducts([]);
+                      setTotalProducts(0);
+                      setLoadingProducts(true);
+                      setShowMobileFilters(false);
                       setCurrentPage(1);
                     }}
                     className={`shrink-0 h-7 sm:h-9 px-2.5 sm:px-4 inline-flex items-center rounded-full text-xs sm:text-sm font-medium ${
@@ -555,7 +581,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
 
                 <div className="pt-2">
                   <ProductFilters
-                    key={`${parentSlug || ""}/${slug}`}
+                    key={`mobile-${parentSlug || ""}/${slug}/${activeSubId || "all"}`}
                     products={products}
                     subcategories={subcategories}
                     descendantMap={descendantMap}
@@ -577,7 +603,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
               className={`hidden ${showDesktopFilters ? "lg:block" : ""} col-span-12 lg:col-span-3`}
             >
               <ProductFilters
-                key={`${parentSlug || ""}/${slug}`}
+                key={`desktop-${parentSlug || ""}/${slug}/${activeSubId || "all"}`}
                 products={products}
                 subcategories={subcategories}
                 descendantMap={descendantMap}
@@ -666,8 +692,19 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
                     </div>
                   )}
                 </>
+              ) : productsError ? (
+                <div className="rounded-xl bg-white p-8 text-center text-sm text-red-700">
+                  <p>{productsError}</p>
+                  <button type="button" onClick={() => setRequestVersion((v) => v + 1)} className="mt-3 rounded-full bg-[#1D1D1F] px-4 py-2 text-white">Retry</button>
+                </div>
               ) : (
                 <NoProductsFound />
+              )}
+
+              {!loadingProducts && !productsError && products.length > 0 && (
+                <p className="mt-5 text-center text-sm text-[#6B7280]">
+                  Showing {(currentPage - 1) * PRODUCTS_PER_PAGE + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)} of {totalProducts} products
+                </p>
               )}
 
               {paginationControls && (

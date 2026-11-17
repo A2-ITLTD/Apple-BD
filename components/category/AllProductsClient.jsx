@@ -11,9 +11,13 @@ import { getDisplayPrice } from "@/lib/pricing";
 import AdSlot from "@/components/ui/AdSlot";
 import NoProductsFound from "@/components/ui/NoProductsFound";
 import PageBanner from "@/components/ui/PageBanner";
+import { fetchJsonWithRetry } from "@/lib/fetchJsonWithRetry";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.applebd.com";
 const PRODUCTS_PER_PAGE = 20;
+const emptyFilters = () => ({
+  priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null,
+});
 
 export default function AllProductsClient() {
   const router = useRouter();
@@ -25,6 +29,8 @@ export default function AllProductsClient() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState("");
+  const [requestVersion, setRequestVersion] = useState(0);
   const [productsLoadedOnce, setProductsLoadedOnce] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   // Desktop filter sidebar — collapsed by default; grid gains an extra column
@@ -32,6 +38,7 @@ export default function AllProductsClient() {
   const [isMobileView, setIsMobileView] = useState(false);
   // In-page category chip filter — null means "All"
   const [activeCategoryId, setActiveCategoryId] = useState(null);
+  const [activeCategoryIds, setActiveCategoryIds] = useState(null);
   // Horizontal category-chip scroller — track whether more chips are hidden on
   // either side so we can show/hide the scroll arrows accordingly.
   const chipBarRef = useRef(null);
@@ -122,8 +129,11 @@ export default function AllProductsClient() {
   }, [getMainCategories, getSubcategories, categoriesMap]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    let current = true;
     const load = async () => {
       setLoadingProducts(true);
+      setProductsError("");
       try {
         const params = new URLSearchParams();
         params.set("page", String(currentPage));
@@ -140,10 +150,9 @@ export default function AllProductsClient() {
           );
         } else if (activeCategoryId) {
           // Filter by the chip-selected main category (self + all descendants)
-          const ids = descendantMap.get(String(activeCategoryId));
           params.set(
             "categoryId",
-            ids ? Array.from(ids).join(",") : String(activeCategoryId),
+            activeCategoryIds?.join(",") || String(activeCategoryId),
           );
         }
 
@@ -166,34 +175,51 @@ export default function AllProductsClient() {
           params.set("minRating", String(activeFilters.minRating));
         }
 
-        const response = await fetch(
+        const json = await fetchJsonWithRetry(
           `${API}/api/products?${params.toString()}`,
+          { signal: controller.signal },
         );
-        const json = await response.json();
-
-        if (!response.ok)
-          throw new Error(json.error || "Failed to load products");
 
         const items = (json.items || []).map((p) => ({
           ...p,
           price: getDisplayPrice(p).price,
         }));
 
-        setProducts(items);
-        setTotalProducts(Number(json.total || 0));
-        setProductsLoadedOnce(true);
+        if (current) {
+          setProducts(items);
+          setTotalProducts(Number(json.total || 0));
+          setProductsLoadedOnce(true);
+        }
       } catch (err) {
+        if (err.name === "AbortError" || !current) return;
         console.error(err);
         setProducts([]);
         setTotalProducts(0);
         setProductsLoadedOnce(true);
+        setProductsError(err.message || "Could not load products. Please try again.");
       } finally {
-        setLoadingProducts(false);
+        if (current) setLoadingProducts(false);
       }
     };
 
     load();
-  }, [currentPage, sortOption, activeFilters, activeCategoryId, descendantMap]);
+    return () => {
+      current = false;
+      controller.abort();
+    };
+  }, [currentPage, sortOption, activeFilters, activeCategoryId, activeCategoryIds, descendantMap, requestVersion]);
+
+  const selectCategory = (categoryId) => {
+    const collectIds = (id) => [String(id), ...getSubcategories(id).flatMap((child) => collectIds(child._id))];
+    setActiveCategoryId(categoryId);
+    setActiveCategoryIds(categoryId ? collectIds(categoryId) : null);
+    setProducts([]);
+    setTotalProducts(0);
+    setLoadingProducts(true);
+    setActiveFilters(emptyFilters());
+    setShowMobileFilters(false);
+    setCurrentPage(1);
+  };
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / PRODUCTS_PER_PAGE));
 
@@ -337,8 +363,7 @@ export default function AllProductsClient() {
                 <button
                   type="button"
                   onClick={() => {
-                    setActiveCategoryId(null);
-                    setCurrentPage(1);
+                    selectCategory(null);
                   }}
                   className={`shrink-0 h-7 sm:h-9 px-2.5 sm:px-4 inline-flex items-center rounded-full text-xs sm:text-sm font-medium ${
                     !activeCategoryId ? "glass-chip-active" : "glass-chip"
@@ -354,8 +379,7 @@ export default function AllProductsClient() {
                       key={cat._id}
                       type="button"
                       onClick={() => {
-                        setActiveCategoryId(cat._id);
-                        setCurrentPage(1);
+                        selectCategory(cat._id);
                       }}
                       className={`shrink-0 h-7 sm:h-9 px-2.5 sm:px-4 inline-flex items-center rounded-full text-xs sm:text-sm font-medium ${
                         isActive ? "glass-chip-active" : "glass-chip"
@@ -448,6 +472,7 @@ export default function AllProductsClient() {
                 </button>
                 <div className="pt-2">
                   <ProductFilters
+                    key={`mobile-${activeCategoryId || "all"}`}
                     products={products}
                     subcategories={categoryTree}
                     descendantMap={descendantMap}
@@ -470,6 +495,7 @@ export default function AllProductsClient() {
               className={`hidden ${showDesktopFilters ? "lg:block" : ""} col-span-12 lg:col-span-3`}
             >
               <ProductFilters
+                key={`desktop-${activeCategoryId || "all"}`}
                 products={products}
                 subcategories={categoryTree}
                 descendantMap={descendantMap}
@@ -525,7 +551,7 @@ export default function AllProductsClient() {
                 />
               </div>
 
-              {!productsLoadedOnce && loadingProducts ? (
+              {loadingProducts && products.length === 0 ? (
                 <div
                   className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${showDesktopFilters ? "" : "xl:grid-cols-5"} gap-2 md:gap-4`}
                 >
@@ -559,8 +585,19 @@ export default function AllProductsClient() {
                     </div>
                   )}
                 </>
+              ) : productsError ? (
+                <div className="rounded-xl bg-white p-8 text-center text-sm text-red-700">
+                  <p>{productsError}</p>
+                  <button type="button" onClick={() => setRequestVersion((v) => v + 1)} className="mt-3 rounded-full bg-[#1D1D1F] px-4 py-2 text-white">Retry</button>
+                </div>
               ) : (
                 <NoProductsFound />
+              )}
+
+              {!loadingProducts && !productsError && products.length > 0 && (
+                <p className="mt-5 text-center text-sm text-[#6B7280]">
+                  Showing {(currentPage - 1) * PRODUCTS_PER_PAGE + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)} of {totalProducts} products
+                </p>
               )}
 
               {paginationControls && (

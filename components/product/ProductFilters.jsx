@@ -92,6 +92,7 @@ export default function ProductFilters({
   const [absMin, setAbsMin] = useState(0);
   const [absMax, setAbsMax] = useState(10000);
   const [priceRange, setPriceRange] = useState([0, 10000]);
+  const [priceTouched, setPriceTouched] = useState(false);
   const [subIds, setSubIds] = useState(new Set());
   const [brands, setBrands] = useState(new Set());
   const [minRating, setMinRating] = useState(null);
@@ -131,6 +132,7 @@ export default function ProductFilters({
 
   // Handler for min slider change
   const handleMinSliderChange = useCallback((e) => {
+    setPriceTouched(true);
     const newVal = Number(e.target.value);
     setPriceRange(prev => {
       const newMin = Math.min(newVal, prev[1]);
@@ -141,6 +143,7 @@ export default function ProductFilters({
 
   // Handler for max slider change
   const handleMaxSliderChange = useCallback((e) => {
+    setPriceTouched(true);
     const newVal = Number(e.target.value);
     setPriceRange(prev => {
       const newMax = Math.max(newVal, prev[0]);
@@ -151,6 +154,7 @@ export default function ProductFilters({
 
   // Handler for min input blur (commit the value)
   const handleMinInputBlur = useCallback(() => {
+    setPriceTouched(true);
     const num = parseInt(minInputValue, 10);
     if (isNaN(num) || num < absMin) {
       setPriceRange(prev => [absMin, prev[1]]);
@@ -166,6 +170,7 @@ export default function ProductFilters({
 
   // Handler for max input blur (commit the value)
   const handleMaxInputBlur = useCallback(() => {
+    setPriceTouched(true);
     const num = parseInt(maxInputValue, 10);
     if (isNaN(num) || num > absMax) {
       setPriceRange(prev => [prev[0], absMax]);
@@ -197,9 +202,9 @@ export default function ProductFilters({
       skipNextNotifyRef.current = false;
       return;
     }
-    onChange?.({ priceRange, expandedSubIds, brands, minRating, selectedSkinTypes, selectedFormulations, freeFrom, skincareFlags });
+    onChange?.({ priceRange: priceTouched ? priceRange : [0, 0], expandedSubIds, brands, minRating, selectedSkinTypes, selectedFormulations, freeFrom, skincareFlags });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [priceRange, expandedSubIds, brands, minRating, selectedSkinTypes, selectedFormulations, freeFrom, skincareFlags]);
+  }, [priceRange, priceTouched, expandedSubIds, brands, minRating, selectedSkinTypes, selectedFormulations, freeFrom, skincareFlags]);
 
   // ── helpers ─────────────────────────────────────────────────────────
   const toggleSet = useCallback((setter, key) => setter(prev => {
@@ -218,6 +223,7 @@ export default function ProductFilters({
   const reset = useCallback(() => {
     const { min, max } = initialBoundsRef.current;
     setPriceRange([min, max]);
+    setPriceTouched(false);
     setMinInputValue(String(min));
     setMaxInputValue(String(max));
     setSubIds(new Set());

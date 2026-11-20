@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import ProductCard from "@/components/product/ProductCard";
 import ProductFilters from "@/components/product/ProductFilters";
 import SortDropdown from "@/components/product/SortDropdown";
@@ -21,8 +21,13 @@ const emptyFilters = () => ({
 
 export default function AllProductsClient() {
   const router = useRouter();
-  const { getMainCategories, getSubcategories, categoriesMap } =
-    useCategories();
+  const pathname = usePathname() || "";
+  const {
+    getMainCategories,
+    getSubcategories,
+    getCategoryBySlug,
+    categoriesMap,
+  } = useCategories();
   const [categoryTree, setCategoryTree] = useState([]);
   const [descendantMap, setDescendantMap] = useState(new Map());
   const [products, setProducts] = useState([]);
@@ -209,16 +214,46 @@ export default function AllProductsClient() {
     };
   }, [currentPage, sortOption, activeFilters, activeCategoryId, activeCategoryIds, descendantMap, requestVersion]);
 
-  const selectCategory = (categoryId) => {
-    const collectIds = (id) => [String(id), ...getSubcategories(id).flatMap((child) => collectIds(child._id))];
-    setActiveCategoryId(categoryId);
-    setActiveCategoryIds(categoryId ? collectIds(categoryId) : null);
-    setProducts([]);
-    setTotalProducts(0);
-    setLoadingProducts(true);
+  const collectCategoryIds = (id) => {
+    const ids = [String(id)];
+    const walk = (nodeId) => {
+      (getSubcategories(nodeId) || []).forEach((child) => {
+        ids.push(String(child._id));
+        walk(child._id);
+      });
+    };
+    walk(id);
+    return ids;
+  };
+
+  // Category chips navigate to /products/<category-slug>/ so every filtered
+  // view has its own shareable URL. The URL stays the source of truth, which
+  // also makes browser Back/Forward work. Static exports serve new categories
+  // through the __placeholder__ shell — usePathname still reports the real slug.
+  const urlSlug = pathname.startsWith("/products/")
+    ? pathname.slice("/products/".length).split("/")[0]
+    : "";
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (Object.keys(categoriesMap).length === 0) return;
+    const category = urlSlug ? getCategoryBySlug(urlSlug) : null;
+    if (urlSlug && !category) {
+      router.replace("/products/");
+      return;
+    }
+    setActiveCategoryId(category?._id || null);
+    setActiveCategoryIds(category ? collectCategoryIds(category._id) : null);
     setActiveFilters(emptyFilters());
     setShowMobileFilters(false);
     setCurrentPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSlug, categoriesMap]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const selectCategory = (category) => {
+    router.push(category?.slug ? `/products/${category.slug}/` : "/products/");
+    setShowMobileFilters(false);
   };
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / PRODUCTS_PER_PAGE));
@@ -378,9 +413,9 @@ export default function AllProductsClient() {
                     <button
                       key={cat._id}
                       type="button"
-                      onClick={() => {
-                        selectCategory(cat._id);
-                      }}
+                        onClick={() => {
+                          selectCategory(cat);
+                        }}
                       className={`shrink-0 h-7 sm:h-9 px-2.5 sm:px-4 inline-flex items-center rounded-full text-xs sm:text-sm font-medium ${
                         isActive ? "glass-chip-active" : "glass-chip"
                       }`}

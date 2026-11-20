@@ -47,6 +47,9 @@ DirectoryIndex index.html
   # the build-time placeholder, not the real URL) and fetches live data
   # from the API.
 
+  # Category-filtered All Products pages (e.g. /products/adapter-charger/)
+  RewriteRule ^products/([^/]+)/?$ /products/__placeholder__/index.html [L]
+
   RewriteRule ^product/([^/]+)/?$ /product/__placeholder__/index.html [L]
   RewriteRule ^blog/([^/]+)/?$ /blog/__placeholder__/index.html [L]
   RewriteRule ^category/([^/]+)/([^/]+)/?$ /category/__placeholder__/__placeholder__/index.html [L]

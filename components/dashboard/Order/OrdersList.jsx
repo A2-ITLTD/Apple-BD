@@ -110,15 +110,28 @@ function fmtDate(date) {
   });
 }
 
-// Text shown on the order-status badge. Prefers the courier's latest live
-// tracking status (display-only, e.g. "Out for Delivery", "At Delivery Hub"),
-// falling back to the internal order status when no courier update exists.
-// The badge COLOR keys off the internal status (see STATUS_STYLE) so the
-// pending/confirmed/delivered category stays visually recognisable.
+// The badge always shows the internal order status so it agrees with the
+// filters and counts. The courier's raw phrase is shown as a secondary line.
 function statusBadgeText(order) {
-  const courier = order?.shipment?.courierStatus;
-  if (courier && String(courier).trim()) return String(courier).trim();
   return order?.status || "—";
+}
+
+function courierStatusText(order) {
+  const courier = order?.shipment?.courierStatus;
+  return courier && String(courier).trim() ? String(courier).trim() : null;
+}
+
+function CourierStatusLine({ order }) {
+  const text = courierStatusText(order);
+  if (!text) return null;
+  return (
+    <span
+      className="block text-[10px] font-normal normal-case opacity-70 truncate max-w-[11rem]"
+      title={text}
+    >
+      {text}
+    </span>
+  );
 }
 
 function variantLabel(item) {
@@ -545,7 +558,7 @@ function OrdersTable({
         <thead>
           <tr className="text-xs text-gray-500 uppercase border-b bg-gray-50">
             {selectable && (
-              <th className="px-4 py-3 font-medium w-8">
+              <th className="px-2.5 py-3 xl:px-3 font-medium w-8">
                 <input
                   type="checkbox"
                   aria-label="Select all orders"
@@ -555,15 +568,15 @@ function OrdersTable({
                 />
               </th>
             )}
-            <th className="px-4 py-3 font-medium">Order ID</th>
-            <th className="px-4 py-3 font-medium">Customer</th>
-            <th className="px-4 py-3 font-medium">Item</th>
-            <th className="px-4 py-3 font-medium">Total</th>
-            <th className="px-4 py-3 font-medium">Payment</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Edited by</th>
-            <th className="px-4 py-3 font-medium">Date</th>
-            <th className="px-4 py-3 font-medium">Actions</th>
+            <th className="px-2.5 py-3 xl:px-3 font-medium">Order ID</th>
+            <th className="px-2.5 py-3 xl:px-3 font-medium">Customer</th>
+            <th className="px-2.5 py-3 xl:px-3 font-medium">Item</th>
+            <th className="px-2.5 py-3 xl:px-3 font-medium">Total</th>
+            <th className="px-2.5 py-3 xl:px-3 font-medium">Payment</th>
+            <th className="px-2.5 py-3 xl:px-3 font-medium">Status</th>
+            <th className="w-24 sm:w-28 px-2.5 py-3 xl:px-3 font-medium">Edited by</th>
+            <th className="w-20 sm:w-24 px-2.5 py-3 xl:px-3 font-medium">Date</th>
+            <th className="px-2.5 py-3 xl:px-3 font-medium">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -578,7 +591,7 @@ function OrdersTable({
               className={`hover:bg-gray-50 transition cursor-pointer ${checked ? "bg-gray-50/60" : ""}`}
             >
               {selectable && (
-                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                <td className="px-2.5 py-3 xl:px-3" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     aria-label={`Select order ${formatOrderId(order)}`}
@@ -588,7 +601,7 @@ function OrdersTable({
                   />
                 </td>
               )}
-              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+              <td className="px-2.5 py-3 xl:px-3" onClick={(e) => e.stopPropagation()}>
                 <Link
                   href={`/dashboard/orders/${order._id}`}
                   target="_blank"
@@ -599,7 +612,7 @@ function OrdersTable({
                 </Link>
               </td>
               <td
-                className="px-4 py-3"
+                className="px-2.5 py-3 xl:px-3"
                 onClick={(e) => onCustomerClick && e.stopPropagation()}
               >
                 {onCustomerClick ? (
@@ -626,13 +639,13 @@ function OrdersTable({
                   </>
                 )}
               </td>
-              <td className="px-4 py-3 text-gray-600 max-w-[12rem] truncate">
+              <td className="px-2.5 py-3 xl:px-3 text-gray-600 max-w-[7rem] lg:max-w-[10rem] truncate">
                 {itemSummary(order.items)}
               </td>
-              <td className="px-4 py-3 font-semibold text-gray-800">
+              <td className="px-2.5 py-3 xl:px-3 font-semibold text-gray-800">
                 ৳{order.total?.toLocaleString()}
               </td>
-              <td className="px-4 py-3">
+              <td className="px-2.5 py-3 xl:px-3">
                 <div className="space-y-0.5">
                   <span className="block text-xs font-medium text-gray-700">
                     {METHOD_LABEL[order.paymentMethod] || order.paymentMethod}
@@ -644,58 +657,59 @@ function OrdersTable({
                   </span>
                 </div>
               </td>
-              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+              <td className="px-2.5 py-3 xl:px-3" onClick={(e) => e.stopPropagation()}>
                 {trashMode ? (
                   <span
                     className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize whitespace-nowrap ${STATUS_STYLE[order.status] || ""}`}
                   >
                     {statusBadgeText(order)}
+                    <CourierStatusLine order={order} />
                   </span>
                 ) : order.status === "cancelled" ? (
                   <span
-                    className="inline-flex items-center text-xs font-medium px-2 py-1 rounded-full capitalize whitespace-nowrap bg-red-100 text-red-700"
+                    className="inline-block text-xs font-medium px-2 py-1 rounded-full capitalize whitespace-nowrap bg-red-100 text-red-700"
                   >
                     {statusBadgeText(order)}
+                    <CourierStatusLine order={order} />
                   </span>
                 ) : (
                   <button
                     type="button"
                     title="Update status"
                     onClick={() => setStatusOrder(order)}
-                    className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full capitalize whitespace-nowrap transition-opacity hover:opacity-80 ${STATUS_STYLE[order.status] || ""}`}
+                    className={`inline-flex flex-col items-start gap-0.5 text-xs font-medium px-2 py-1 rounded-lg capitalize whitespace-nowrap transition-opacity hover:opacity-80 ${STATUS_STYLE[order.status] || ""}`}
                   >
-                    {statusBadgeText(order)}
-                    <svg
-                      className="h-3 w-3 shrink-0 opacity-60"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                    </svg>
+                    <span className="inline-flex items-center gap-1">
+                      {statusBadgeText(order)}
+                      <svg
+                        className="h-3 w-3 shrink-0 opacity-60"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                      </svg>
+                    </span>
+                    <CourierStatusLine order={order} />
                   </button>
                 )}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-500 align-top">
+              <td className="w-24 sm:w-28 px-2.5 py-3 xl:px-3 text-[11px] leading-snug text-gray-500 align-top break-words">
                 {(() => {
                   const editors = recentEditors(order.editedBy);
                   if (editors.length === 0)
                     return <span className="text-gray-300">—</span>;
                   return (
-                    <div className="space-y-0.5 max-w-[12rem]">
+                    <div className="space-y-1">
                       {editors.map((entry, i) => {
                         const label = fmtEditedBy(entry);
                         return (
-                          <div
-                            key={i}
-                            className="whitespace-nowrap"
-                            title={label}
-                          >
+                          <div key={i} className="break-words" title={label}>
                             {label}
                           </div>
                         );
@@ -704,7 +718,7 @@ function OrdersTable({
                   );
                 })()}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+              <td className="w-20 sm:w-24 px-2.5 py-3 xl:px-3 text-[11px] leading-snug text-gray-400 break-words">
                 {fmt(order.createdAt)}
                 {trashMode && daysLeft !== null && (
                   <span
@@ -716,7 +730,7 @@ function OrdersTable({
                   </span>
                 )}
               </td>
-              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+              <td className="px-2.5 py-3 xl:px-3" onClick={(e) => e.stopPropagation()}>
                 {trashMode ? (
                   <div className="flex flex-wrap gap-1.5">
                     <button
@@ -1699,7 +1713,7 @@ function ReturnsRefundsSection() {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex overflow-x-auto gap-1 px-5 py-2 border-b scrollbar-hide">
+        <div className="flex flex-wrap gap-1 px-5 py-2 border-b">
           {RETURN_TABS.map((tab) => (
             <button
               key={tab}
@@ -1707,7 +1721,7 @@ function ReturnsRefundsSection() {
                 setActiveTab(tab);
                 setPage(1);
               }}
-              className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize transition ${activeTab === tab ? "bg-gray-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium capitalize transition ${activeTab === tab ? "bg-gray-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
               {tab === "all"
                 ? "All"
@@ -1847,7 +1861,10 @@ const ALL_ORDERS_TABS = [
   "all",
   "pending",
   "accepted",
+  "picked",
   "confirmed",
+  "processing",
+  "shipped",
   "delivered",
   "rejected",
   "returned",
@@ -1858,7 +1875,10 @@ const ALL_ORDERS_LABELS = {
   all: "All",
   pending: "Pending",
   accepted: "Accepted",
+  picked: "Picked",
   confirmed: "Confirmed",
+  processing: "Processing",
+  shipped: "Shipped",
   delivered: "Delivered",
   rejected: "Rejected",
   returned: "Returned",
@@ -2078,7 +2098,7 @@ function AllOrdersSection() {
 
         {/* Sub-tabs (hidden in trash view) */}
         {!viewTrash && (
-          <div className="flex overflow-x-auto gap-1 px-5 py-2 border-b scrollbar-hide">
+          <div className="flex flex-wrap gap-1 px-5 py-2 border-b">
             {ALL_ORDERS_TABS.map((tab) => (
               <button
                 key={tab}
@@ -2086,7 +2106,7 @@ function AllOrdersSection() {
                   setActiveTab(tab);
                   setPage(1);
                 }}
-                className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize transition ${activeTab === tab ? "bg-gray-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium capitalize transition ${activeTab === tab ? "bg-gray-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
                 {ALL_ORDERS_LABELS[tab]}
                 {stats[tab] != null && (

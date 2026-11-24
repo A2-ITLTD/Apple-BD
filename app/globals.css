@@ -161,6 +161,14 @@ body {
   display: none;
 }
 
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hide scrollbar in category sidebar list */
 .category-list-scroll::-webkit-scrollbar {
   display: none;
